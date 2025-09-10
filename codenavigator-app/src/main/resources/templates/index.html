@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">CodeNavigator</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- 自定义CSS -->
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="fas fa-compass me-2"></i>CodeNavigator
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/}">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/learning}">
+                            <i class="fas fa-road me-1"></i>学习路径
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/conversation}">
+                            <i class="fas fa-comments me-1"></i>AI对话
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient-primary py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 text-white fw-bold mb-4">
+                        CodeNavigator
+                        <small class="d-block text-white-50 fs-5 mt-2">智能对话引导学习框架</small>
+                    </h1>
+                    <p class="lead text-white mb-4">
+                        通过AI对话驱动 + 渐进式实践 + 源码对照学习的创新模式，
+                        帮助开发者系统性掌握复杂技术框架的设计思想。
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="#features" class="btn btn-light btn-lg">
+                            <i class="fas fa-rocket me-2"></i>开始学习
+                        </a>
+                        <a th:href="@{/conversation}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-comments me-2"></i>AI对话
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="hero-illustration">
+                        <i class="fas fa-brain fa-10x text-white opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center mb-5">
+                    <h2 class="display-5 fw-bold">核心功能</h2>
+                    <p class="lead text-muted">AI驱动的个性化学习体验</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card h-100 p-4 bg-light rounded-3">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-robot fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">🤖 智能对话引导</h5>
+                        <p class="text-muted">
+                            自然语言交互，AI智能解析学习目标并生成个性化学习路径，
+                            支持上下文感知和多轮深度对话。
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card h-100 p-4 bg-light rounded-3">
+                        <div class="feature-icon text-success mb-3">
+                            <i class="fas fa-tasks fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">📋 渐进式任务分解</h5>
+                        <p class="text-muted">
+                            将复杂框架拆解为逻辑清晰的学习模块，
+                            根据用户反馈自动调整难度，提供清晰的进度管理。
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card h-100 p-4 bg-light rounded-3">
+                        <div class="feature-icon text-info mb-3">
+                            <i class="fas fa-search fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">🔍 智能代码分析</h5>
+                        <p class="text-muted">
+                            基于LLM的实时代码审查，设计模式识别，
+                            提供针对性的性能优化建议和最佳实践指导。
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card h-100 p-4 bg-light rounded-3">
+                        <div class="feature-icon text-warning mb-3">
+                            <i class="fas fa-book fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">📚 源码对照学习</h5>
+                        <p class="text-muted">
+                            展示用户实现与知名框架的差异对比，
+                            深入解释设计思想和工程实践经验总结。
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card h-100 p-4 bg-light rounded-3">
+                        <div class="feature-icon text-danger mb-3">
+                            <i class="fas fa-sticky-note fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">📝 智能学习笔记</h5>
+                        <p class="text-muted">
+                            自动记录学习过程和代码演进，构建个人技术知识图谱，
+                            支持多格式导出和知识分享。
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card h-100 p-4 bg-light rounded-3">
+                        <div class="feature-icon text-purple mb-3">
+                            <i class="fas fa-chart-line fa-3x"></i>
+                        </div>
+                        <h5 class="fw-bold">📈 学习进度跟踪</h5>
+                        <p class="text-muted">
+                            可视化学习进度和技能成长轨迹，
+                            智能推荐下一阶段学习内容和关联技术栈。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Learning Path Preview -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center mb-5">
+                    <h2 class="display-5 fw-bold">热门学习路径</h2>
+                    <p class="lead text-muted">从基础到进阶，系统掌握主流技术框架</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fab fa-java fa-2x text-danger me-3"></i>
+                                <div>
+                                    <h5 class="card-title mb-1">Spring框架深度学习</h5>
+                                    <small class="text-muted">中级 · 预计16小时</small>
+                                </div>
+                            </div>
+                            <p class="card-text">
+                                从IoC容器到AOP，从SpringMVC到Spring Boot，
+                                系统掌握Spring生态的核心设计思想。
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary">Java</span>
+                                <a href="#" class="btn btn-outline-primary btn-sm">开始学习</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-network-wired fa-2x text-success me-3"></i>
+                                <div>
+                                    <h5 class="card-title mb-1">Netty网络编程</h5>
+                                    <small class="text-muted">高级 · 预计20小时</small>
+                                </div>
+                            </div>
+                            <p class="card-text">
+                                深入理解NIO模型和事件驱动架构，
+                                掌握高性能网络应用开发的核心技术。
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">网络编程</span>
+                                <a href="#" class="btn btn-outline-success btn-sm">开始学习</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-stream fa-2x text-info me-3"></i>
+                                <div>
+                                    <h5 class="card-title mb-1">Kafka消息系统</h5>
+                                    <small class="text-muted">中级 · 预计14小时</small>
+                                </div>
+                            </div>
+                            <p class="card-text">
+                                从消息投递机制到分区副本，
+                                构建高可用的分布式消息处理系统。
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-info">分布式</span>
+                                <a href="#" class="btn btn-outline-info btn-sm">开始学习</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="display-5 fw-bold mb-4">开始您的智能学习之旅</h2>
+                    <p class="lead mb-4">
+                        加入CodeNavigator，用AI重新定义技术学习体验，
+                        让每一行代码都成为您成长的阶梯。
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a th:href="@{/conversation}" class="btn btn-light btn-lg">
+                            <i class="fas fa-comments me-2"></i>开始AI对话
+                        </a>
+                        <a th:href="@{/learning}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-road me-2"></i>查看学习路径
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark py-4 text-white">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">
+                        &copy; 2024 CodeNavigator. 让学习更智能，让成长更高效！
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-0">
+                        <span th:text="${version}">v1.0.0</span> | 
+                        <a href="https://github.com/your-org/CodeNavigator" target="_blank" class="text-white text-decoration-none">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        }
+        
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .hero-illustration {
+            opacity: 0.8;
+        }
+        
+        .text-purple {
+            color: #6f42c1 !important;
+        }
+    </style>
+</body>
+</html>

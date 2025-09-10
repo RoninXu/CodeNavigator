@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: codenavigator-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: code_navigator_dev
+      MYSQL_USER: codenavigator
+      MYSQL_PASSWORD: codenavigator123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docs/sql:/docker-entrypoint-initdb.d
+    networks:
+      - codenavigator-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+    
+  redis:
+    image: redis:7.0-alpine
+    container_name: codenavigator-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - codenavigator-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 5s
+      retries: 5
+      
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: codenavigator-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=code_navigator_dev
+      - DB_USERNAME=codenavigator
+      - DB_PASSWORD=codenavigator123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-your-openai-api-key}
+    volumes:
+      - ./logs:/app/logs
+      - app_uploads:/app/uploads
+    networks:
+      - codenavigator-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_uploads:
+    driver: local
+
+networks:
+  codenavigator-network:
+    driver: bridge

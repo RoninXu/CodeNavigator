@@ -1,0 +1,53 @@
+# 生产环境配置
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:code_navigator}?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=GMT%2B8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      
+  thymeleaf:
+    cache: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# 生产环境日志级别
+logging:
+  level:
+    com.codenavigator: INFO
+    org.springframework: WARN
+    root: INFO
+  file:
+    name: /var/log/codenavigator/application.log
+
+# 生产环境AI配置
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: ${OPENAI_API_KEY}
+      model-name: gpt-4
+      temperature: 0.5
+      timeout: 30s
+
+# 生产环境业务配置
+codenavigator:
+  ai:
+    conversation-timeout: 60000
+    max-conversation-turns: 50
+  file:
+    upload-path: /var/lib/codenavigator/uploads
