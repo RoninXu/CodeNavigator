@@ -1,7 +1,12 @@
 package com.codenavigator.core.entity;
 
 import com.codenavigator.common.enums.DifficultyLevel;
+import com.codenavigator.common.enums.UserLevel;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -10,14 +15,17 @@ import java.util.List;
 
 @Entity
 @Table(name = "learning_paths")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LearningPath {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     
     @Column(nullable = false, length = 100)
-    private String name;
+    private String title;
     
     @Column(nullable = false, length = 50)
     private String framework;
@@ -29,17 +37,22 @@ public class LearningPath {
     @Column(nullable = false)
     private DifficultyLevel difficulty;
     
-    @Column(name = "estimated_hours")
-    private Integer estimatedHours;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "target_level")
+    private UserLevel targetLevel;
+    
+    @Column(name = "estimated_duration")
+    private Integer estimatedDuration;
     
     @OneToMany(mappedBy = "learningPath", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @OrderBy("sequence ASC")
+    @OrderBy("orderIndex ASC")
     private List<LearningModule> modules;
     
     @Column(columnDefinition = "json")
     private String prerequisites;
     
     @Column(name = "is_active")
+    @Builder.Default
     private Boolean isActive = true;
     
     @CreationTimestamp
@@ -50,103 +63,16 @@ public class LearningPath {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
     
-    // 无参构造函数
-    public LearningPath() {
-    }
+    @Column(name = "created_by")
+    private String createdBy;
     
-    // 构造函数
-    public LearningPath(String name, String framework, DifficultyLevel difficulty) {
-        this.name = name;
-        this.framework = framework;
-        this.difficulty = difficulty;
-    }
+    @Column(name = "tags")
+    private String tags;
     
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "completion_count")
+    @Builder.Default
+    private Integer completionCount = 0;
     
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public String getFramework() {
-        return framework;
-    }
-    
-    public void setFramework(String framework) {
-        this.framework = framework;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public DifficultyLevel getDifficulty() {
-        return difficulty;
-    }
-    
-    public void setDifficulty(DifficultyLevel difficulty) {
-        this.difficulty = difficulty;
-    }
-    
-    public Integer getEstimatedHours() {
-        return estimatedHours;
-    }
-    
-    public void setEstimatedHours(Integer estimatedHours) {
-        this.estimatedHours = estimatedHours;
-    }
-    
-    public List<LearningModule> getModules() {
-        return modules;
-    }
-    
-    public void setModules(List<LearningModule> modules) {
-        this.modules = modules;
-    }
-    
-    public String getPrerequisites() {
-        return prerequisites;
-    }
-    
-    public void setPrerequisites(String prerequisites) {
-        this.prerequisites = prerequisites;
-    }
-    
-    public Boolean getIsActive() {
-        return isActive;
-    }
-    
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    @Column(name = "average_rating")
+    private Double averageRating;
 }

@@ -1,15 +1,28 @@
 package com.codenavigator.core.entity;
 
 import com.codenavigator.common.enums.ModuleType;
+import com.codenavigator.common.enums.DifficultyLevel;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "learning_modules")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LearningModule {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     
     @Column(nullable = false, length = 200)
     private String title;
@@ -23,11 +36,11 @@ public class LearningModule {
     @Column(columnDefinition = "text")
     private String hints;
     
-    @Column(nullable = false)
-    private Integer sequence;
+    @Column(name = "order_index", nullable = false)
+    private Integer orderIndex;
     
-    @Column(name = "estimated_minutes")
-    private Integer estimatedMinutes;
+    @Column(name = "estimated_hours")
+    private Integer estimatedHours;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "learning_path_id", nullable = false)
@@ -35,112 +48,39 @@ public class LearningModule {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ModuleType type;
+    private ModuleType moduleType;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DifficultyLevel difficulty;
     
     @Column(name = "success_criteria", columnDefinition = "json")
     private String successCriteria;
     
     @Column(name = "is_active")
+    @Builder.Default
     private Boolean isActive = true;
     
-    // 无参构造函数
-    public LearningModule() {
-    }
+    @Column(name = "is_required")
+    @Builder.Default
+    private Boolean isRequired = true;
     
-    // 构造函数
-    public LearningModule(String title, Integer sequence, ModuleType type, LearningPath learningPath) {
-        this.title = title;
-        this.sequence = sequence;
-        this.type = type;
-        this.learningPath = learningPath;
-    }
+    @ElementCollection
+    @CollectionTable(name = "module_prerequisites", joinColumns = @JoinColumn(name = "module_id"))
+    @Column(name = "prerequisite_id")
+    private List<String> prerequisites;
     
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "content_url")
+    private String contentUrl;
     
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Column(name = "resources", columnDefinition = "json")
+    private String resources;
     
-    public String getTitle() {
-        return title;
-    }
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
     
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public String getRequirements() {
-        return requirements;
-    }
-    
-    public void setRequirements(String requirements) {
-        this.requirements = requirements;
-    }
-    
-    public String getHints() {
-        return hints;
-    }
-    
-    public void setHints(String hints) {
-        this.hints = hints;
-    }
-    
-    public Integer getSequence() {
-        return sequence;
-    }
-    
-    public void setSequence(Integer sequence) {
-        this.sequence = sequence;
-    }
-    
-    public Integer getEstimatedMinutes() {
-        return estimatedMinutes;
-    }
-    
-    public void setEstimatedMinutes(Integer estimatedMinutes) {
-        this.estimatedMinutes = estimatedMinutes;
-    }
-    
-    public LearningPath getLearningPath() {
-        return learningPath;
-    }
-    
-    public void setLearningPath(LearningPath learningPath) {
-        this.learningPath = learningPath;
-    }
-    
-    public ModuleType getType() {
-        return type;
-    }
-    
-    public void setType(ModuleType type) {
-        this.type = type;
-    }
-    
-    public String getSuccessCriteria() {
-        return successCriteria;
-    }
-    
-    public void setSuccessCriteria(String successCriteria) {
-        this.successCriteria = successCriteria;
-    }
-    
-    public Boolean getIsActive() {
-        return isActive;
-    }
-    
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
-    }
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 }

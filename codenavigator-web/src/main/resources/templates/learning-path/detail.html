@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">学习路径详情 - CodeNavigator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .path-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .path-stats {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .module-card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .module-header {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.25rem;
+        }
+        
+        .module-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .difficulty-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .difficulty-beginner { background-color: #28a745; }
+        .difficulty-intermediate { background-color: #ffc107; color: #212529; }
+        .difficulty-advanced { background-color: #fd7e14; }
+        .difficulty-expert { background-color: #dc3545; }
+        
+        .module-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+        
+        .module-body {
+            padding: 1.25rem;
+        }
+        
+        .module-description {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+        
+        .progress-bar-container {
+            background-color: #e9ecef;
+            border-radius: 0.25rem;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 0.25rem;
+            transition: width 0.6s ease;
+        }
+        
+        .module-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .start-learning-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .start-learning-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .sidebar {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+        
+        .prerequisites-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .prerequisites-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .prerequisites-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        
+        .loading .spinner {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="path-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/" style="color: rgba(255,255,255,0.8);">首页</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="/learning-paths" style="color: rgba(255,255,255,0.8);">学习路径</a>
+                            </li>
+                            <li class="breadcrumb-item active" style="color: white;">
+                                <span th:text="${learningPath.title}">Spring学习路径</span>
+                            </li>
+                        </ol>
+                    </nav>
+                    
+                    <h1 th:text="${learningPath.title}">Spring框架学习路径</h1>
+                    <p class="lead" th:text="${learningPath.description}">
+                        全面掌握Spring生态系统，从基础到高级应用
+                    </p>
+                    
+                    <button class="btn start-learning-btn mt-3" onclick="startLearningPath()">
+                        <i class="fas fa-play me-2"></i>
+                        开始学习
+                    </button>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="path-stats">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="fs-4 fw-bold" th:text="${#lists.size(learningPath.modules)}">7</div>
+                                <div class="small">模块数量</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fs-4 fw-bold" th:text="${learningPath.estimatedDuration} + '周'">12周</div>
+                                <div class="small">预计时长</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fs-4 fw-bold">0%</div>
+                                <div class="small">完成进度</div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar-container mt-3">
+                            <div class="progress-bar-fill" style="width: 0%" id="overallProgress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h3 class="mb-4">学习模块</h3>
+                
+                <div class="modules-container">
+                    <div th:each="module, iterStat : ${learningPath.modules}" class="module-card card">
+                        <div class="module-header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h5 class="module-title">
+                                    <span class="text-muted me-2" th:text="'第' + (${iterStat.index} + 1) + '章'">第1章</span>
+                                    <span th:text="${module.title}">Spring核心概念</span>
+                                </h5>
+                                <span class="badge difficulty-badge" 
+                                      th:classappend="'difficulty-' + ${module.difficulty.name().toLowerCase()}"
+                                      th:text="${module.difficulty}">
+                                    INTERMEDIATE
+                                </span>
+                            </div>
+                            
+                            <div class="module-meta">
+                                <span>
+                                    <i class="fas fa-clock me-1"></i>
+                                    <span th:text="${module.estimatedHours} + '小时'">12小时</span>
+                                </span>
+                                <span>
+                                    <i class="fas fa-tag me-1"></i>
+                                    <span th:text="${module.moduleType}">理论学习</span>
+                                </span>
+                                <span th:if="${module.isRequired}">
+                                    <i class="fas fa-star text-warning me-1"></i>
+                                    必修
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="module-body">
+                            <div class="module-description" th:text="${module.description}">
+                                理解IoC容器、依赖注入、AOP等核心概念
+                            </div>
+                            
+                            <div class="module-actions">
+                                <button class="btn btn-primary btn-sm" 
+                                        th:onclick="'startModule(\'' + ${module.id} + '\')'">
+                                    <i class="fas fa-play me-1"></i>
+                                    开始学习
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    详细信息
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="sidebar">
+                    <div class="sidebar-section">
+                        <h6 class="sidebar-title">
+                            <i class="fas fa-info-circle me-2"></i>
+                            路径信息
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>技术栈：</strong>
+                                <span th:text="${learningPath.framework}">Spring</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>难度等级：</strong>
+                                <span th:text="${learningPath.targetLevel}">中级</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>创建时间：</strong>
+                                <span th:text="${#temporals.format(learningPath.createdAt, 'yyyy-MM-dd')}">2024-01-15</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>完成人数：</strong>
+                                <span th:text="${learningPath.completionCount}">0</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sidebar-section" th:if="${learningPath.prerequisites}">
+                        <h6 class="sidebar-title">
+                            <i class="fas fa-list-check me-2"></i>
+                            前置条件
+                        </h6>
+                        <ul class="prerequisites-list">
+                            <li>基础Java知识</li>
+                            <li>Maven构建工具</li>
+                            <li>IDE开发环境</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h6 class="sidebar-title">
+                            <i class="fas fa-graduation-cap me-2"></i>
+                            学习目标
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                掌握Spring核心概念
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                熟练使用Spring Boot
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                完成实战项目开发
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <button class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-bookmark me-2"></i>
+                            收藏路径
+                        </button>
+                        <button class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-share-alt me-2"></i>
+                            分享路径
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function startLearningPath() {
+            const pathId = window.location.pathname.split('/').pop();
+            
+            if (confirm('确定要开始这个学习路径吗？')) {
+                fetch(`/learning-paths/${pathId}/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        loadProgress();
+                    } else {
+                        alert('启动失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('网络错误，请稍后再试');
+                });
+            }
+        }
+        
+        function startModule(moduleId) {
+            alert('模块学习功能正在开发中...');
+            // 这里可以导航到具体的模块学习页面
+        }
+        
+        function loadProgress() {
+            const pathId = window.location.pathname.split('/').pop();
+            
+            fetch(`/learning-paths/${pathId}/progress`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.summary) {
+                        updateProgressDisplay(data.summary);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading progress:', error);
+                });
+        }
+        
+        function updateProgressDisplay(summary) {
+            const progressBar = document.getElementById('overallProgress');
+            const progressText = document.querySelector('.path-stats .col-4:nth-child(3) .fs-4');
+            
+            if (progressBar && progressText && summary.completionPercentage !== undefined) {
+                progressBar.style.width = summary.completionPercentage + '%';
+                progressText.textContent = Math.round(summary.completionPercentage) + '%';
+            }
+        }
+        
+        // 页面加载时检查进度
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProgress();
+        });
+    </script>
+</body>
+</html>

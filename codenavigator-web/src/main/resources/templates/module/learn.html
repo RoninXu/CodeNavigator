@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">模块学习 - CodeNavigator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet">
+    <style>
+        .learning-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .progress-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+            border-radius: 0.25rem;
+        }
+        
+        .learning-content {
+            padding: 2rem 0;
+        }
+        
+        .content-section {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            color: #495057;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-editor {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            min-height: 300px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        
+        .task-card {
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .task-header {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .task-type-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .task-code { background-color: #17a2b8; }
+        .task-quiz { background-color: #28a745; }
+        .task-project { background-color: #fd7e14; }
+        
+        .hint-panel {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .hint-panel .hint-icon {
+            color: #0066cc;
+            font-size: 1.2rem;
+        }
+        
+        .navigation-buttons {
+            position: sticky;
+            bottom: 2rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        
+        .quiz-option {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quiz-option:hover {
+            background: #e9ecef;
+        }
+        
+        .quiz-option.selected {
+            background: #e7f3ff;
+            border-color: #0066cc;
+        }
+        
+        .submission-result {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .sidebar {
+            position: sticky;
+            top: 120px;
+            height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+        
+        .outline-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        
+        .outline-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .outline-item.active {
+            background-color: #e7f3ff;
+            border-left: 3px solid #0066cc;
+            padding-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="learning-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-2">
+                            <li class="breadcrumb-item">
+                                <a href="/learning-paths" style="color: rgba(255,255,255,0.8);">学习路径</a>
+                            </li>
+                            <li class="breadcrumb-item active" style="color: white;">
+                                Spring核心概念
+                            </li>
+                        </ol>
+                    </nav>
+                    <h4 class="mb-0">第1章：Spring核心概念</h4>
+                </div>
+                <div class="col-lg-4">
+                    <div class="progress-section">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>学习进度</span>
+                            <span id="progressText">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container learning-content">
+        <div class="row">
+            <div class="col-lg-9">
+                <!-- 理论学习内容 -->
+                <div class="content-section" id="theory-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-book me-2"></i>
+                        理论学习
+                    </h3>
+                    
+                    <div class="mb-4">
+                        <h4>什么是Spring框架？</h4>
+                        <p>Spring是一个开源的Java应用程序框架，旨在简化企业级应用程序的开发。它提供了全面的基础设施支持，让开发者可以专注于业务逻辑的实现。</p>
+                        
+                        <h5>核心特性</h5>
+                        <ul>
+                            <li><strong>控制反转(IoC)</strong>：Spring容器管理对象的创建和依赖关系</li>
+                            <li><strong>面向切面编程(AOP)</strong>：提供声明式的事务管理和其他企业服务</li>
+                            <li><strong>数据访问抽象</strong>：提供一致的数据访问API</li>
+                            <li><strong>Web框架</strong>：Spring MVC提供了强大的Web开发支持</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="hint-panel">
+                        <div class="d-flex">
+                            <i class="fas fa-lightbulb hint-icon me-2"></i>
+                            <div>
+                                <strong>学习提示：</strong>
+                                理解IoC和DI的概念是学习Spring的关键。建议先从简单的示例开始，逐步深入理解容器的工作原理。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实践任务 -->
+                <div class="content-section" id="practice-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-code me-2"></i>
+                        实践任务
+                    </h3>
+                    
+                    <!-- 代码任务 -->
+                    <div class="task-card card">
+                        <div class="task-header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h5 class="mb-0">任务1：创建第一个Spring Bean</h5>
+                                <span class="badge task-type-badge task-code">代码实践</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p>创建一个简单的Spring配置，定义一个Bean并通过ApplicationContext获取它。</p>
+                            
+                            <div class="mb-3">
+                                <label for="codeEditor" class="form-label">在下面编写你的代码：</label>
+                                <textarea id="codeEditor" class="form-control code-editor" 
+                                         placeholder="// 在这里编写你的Java代码
+@Configuration
+public class AppConfig {
+    // 定义你的Bean
+}">
+                                </textarea>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" onclick="submitCode()">
+                                    <i class="fas fa-play me-1"></i>提交代码
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="getHints()">
+                                    <i class="fas fa-question-circle me-1"></i>获取提示
+                                </button>
+                            </div>
+                            
+                            <div id="codeResult" class="submission-result"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 选择题任务 -->
+                    <div class="task-card card">
+                        <div class="task-header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h5 class="mb-0">任务2：知识检查</h5>
+                                <span class="badge task-type-badge task-quiz">知识测试</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="quiz-question">
+                                <h6>Spring的IoC容器主要负责什么？</h6>
+                                <div class="quiz-option" onclick="selectOption(this, 'a')">
+                                    A. 管理对象的生命周期和依赖注入
+                                </div>
+                                <div class="quiz-option" onclick="selectOption(this, 'b')">
+                                    B. 提供Web服务功能
+                                </div>
+                                <div class="quiz-option" onclick="selectOption(this, 'c')">
+                                    C. 数据库连接管理
+                                </div>
+                                <div class="quiz-option" onclick="selectOption(this, 'd')">
+                                    D. 用户界面渲染
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-success mt-3" onclick="submitQuiz()" id="submitQuizBtn" disabled>
+                                <i class="fas fa-check me-1"></i>提交答案
+                            </button>
+                            
+                            <div id="quizResult" class="submission-result"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 导航按钮 -->
+                <div class="navigation-buttons">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-outline-secondary" onclick="goBack()">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            返回路径
+                        </button>
+                        
+                        <div>
+                            <button class="btn btn-outline-primary me-2" onclick="saveProgress()">
+                                <i class="fas fa-save me-1"></i>
+                                保存进度
+                            </button>
+                            <button class="btn btn-success" onclick="completeModule()" id="completeBtn" disabled>
+                                <i class="fas fa-check-circle me-1"></i>
+                                完成模块
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-list me-2"></i>
+                                学习大纲
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="outline-item active" onclick="scrollToSection('theory-section')">
+                                <i class="fas fa-book me-2"></i>理论学习
+                            </div>
+                            <div class="outline-item" onclick="scrollToSection('practice-section')">
+                                <i class="fas fa-code me-2"></i>实践任务
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>
+                                学习统计
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>已用时间</span>
+                                <span id="studyTime">0分钟</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>完成任务</span>
+                                <span id="completedTasks">0/2</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>预计剩余</span>
+                                <span id="remainingTime">30分钟</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-java.min.js"></script>
+    <script>
+        let selectedQuizOption = null;
+        let completedTasks = 0;
+        let startTime = Date.now();
+        
+        // 更新学习时间
+        setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 60000);
+            document.getElementById('studyTime').textContent = elapsed + '分钟';
+        }, 60000);
+        
+        function submitCode() {
+            const code = document.getElementById('codeEditor').value;
+            const resultDiv = document.getElementById('codeResult');
+            
+            if (!code.trim()) {
+                showAlert('请先编写代码', 'warning');
+                return;
+            }
+            
+            // 显示加载状态
+            resultDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> 正在分析代码...</div>';
+            resultDiv.style.display = 'block';
+            
+            // 模拟API调用
+            fetch(`/modules/${getModuleId()}/submit-task`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code: code })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-check-circle me-2"></i>代码提交成功！</h6>
+                            <p><strong>得分：</strong>${data.feedback.score}/100</p>
+                            <p><strong>评价：</strong>${data.feedback.comments}</p>
+                            <div class="mt-2">
+                                <strong>改进建议：</strong>
+                                <ul class="mb-0">
+                                    ${data.feedback.suggestions.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    updateTaskCompletion();
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = '<div class="alert alert-danger">提交失败，请稍后再试</div>';
+                console.error('Error:', error);
+            });
+        }
+        
+        function selectOption(element, option) {
+            // 清除之前的选择
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // 选择当前选项
+            element.classList.add('selected');
+            selectedQuizOption = option;
+            
+            // 启用提交按钮
+            document.getElementById('submitQuizBtn').disabled = false;
+        }
+        
+        function submitQuiz() {
+            if (!selectedQuizOption) {
+                showAlert('请先选择答案', 'warning');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('quizResult');
+            const answers = { question1: selectedQuizOption };
+            
+            fetch(`/modules/${getModuleId()}/submit-task?taskType=quiz`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ answers: answers })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const alertClass = data.passed ? 'alert-success' : 'alert-warning';
+                    resultDiv.innerHTML = `
+                        <div class="alert ${alertClass}">
+                            <h6><i class="fas fa-chart-line me-2"></i>测试结果</h6>
+                            <p><strong>得分：</strong>${data.score.toFixed(1)}分 (${data.correct}/${data.total})</p>
+                            <p><strong>状态：</strong>${data.passed ? '通过' : '需要重新学习'}</p>
+                        </div>
+                    `;
+                    if (data.passed) {
+                        updateTaskCompletion();
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                }
+                resultDiv.style.display = 'block';
+            })
+            .catch(error => {
+                resultDiv.innerHTML = '<div class="alert alert-danger">提交失败，请稍后再试</div>';
+                resultDiv.style.display = 'block';
+                console.error('Error:', error);
+            });
+        }
+        
+        function updateTaskCompletion() {
+            completedTasks++;
+            document.getElementById('completedTasks').textContent = `${completedTasks}/2`;
+            
+            // 更新进度
+            const progress = (completedTasks / 2) * 100;
+            updateProgress(progress);
+            
+            // 如果所有任务完成，启用完成按钮
+            if (completedTasks >= 2) {
+                document.getElementById('completeBtn').disabled = false;
+            }
+        }
+        
+        function updateProgress(percentage) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            progressBar.style.width = percentage + '%';
+            progressText.textContent = Math.round(percentage) + '%';
+        }
+        
+        function getHints() {
+            fetch(`/modules/${getModuleId()}/hints`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert(data.hints.practice, 'info');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
+        function completeModule() {
+            if (confirm('确定要完成这个模块吗？')) {
+                fetch(`/modules/${getModuleId()}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ completedTasks: completedTasks })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert(data.message, 'success');
+                        setTimeout(() => {
+                            if (data.nextModule) {
+                                window.location.href = `/modules/${data.nextModule}/learn`;
+                            } else {
+                                goBack();
+                            }
+                        }, 2000);
+                    } else {
+                        showAlert(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('完成模块失败，请稍后再试', 'danger');
+                    console.error('Error:', error);
+                });
+            }
+        }
+        
+        function saveProgress() {
+            // 保存当前进度
+            showAlert('进度已保存', 'success');
+        }
+        
+        function goBack() {
+            window.history.back();
+        }
+        
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+            
+            // 更新导航状态
+            document.querySelectorAll('.outline-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        function getModuleId() {
+            return window.location.pathname.split('/')[2]; // 从URL获取模块ID
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            // 5秒后自动消失
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 可以在这里添加页面加载后的初始化逻辑
+            updateProgress(0);
+        });
+    </script>
+</body>
+</html>
