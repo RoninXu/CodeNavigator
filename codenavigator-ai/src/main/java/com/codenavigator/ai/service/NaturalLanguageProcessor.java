@@ -6,10 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Arrays;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -18,31 +15,40 @@ import java.util.regex.Pattern;
 public class NaturalLanguageProcessor {
     
     // 技术关键词映射
-    private static final Map<String, List<String>> TECHNOLOGY_KEYWORDS = Map.of(
-        "Spring", Arrays.asList("spring", "springboot", "spring boot", "spring framework", "依赖注入", "ioc", "aop"),
-        "Kafka", Arrays.asList("kafka", "消息队列", "mq", "message queue", "stream", "流处理"),
-        "Netty", Arrays.asList("netty", "nio", "网络编程", "socket", "tcp", "udp", "异步"),
-        "MySQL", Arrays.asList("mysql", "数据库", "sql", "关系数据库", "jdbc"),
-        "Redis", Arrays.asList("redis", "缓存", "cache", "nosql", "内存数据库"),
-        "Docker", Arrays.asList("docker", "容器", "container", "微服务", "k8s", "kubernetes"),
-        "Java", Arrays.asList("java", "jvm", "多线程", "并发", "集合", "泛型")
-    );
+    private static final Map<String, List<String>> TECHNOLOGY_KEYWORDS;
+    static {
+        Map<String, List<String>> keywords = new HashMap<>();
+        keywords.put("Spring", Arrays.asList("spring", "springboot", "spring boot", "spring framework", "依赖注入", "ioc", "aop"));
+        keywords.put("Kafka", Arrays.asList("kafka", "消息队列", "mq", "message queue", "stream", "流处理"));
+        keywords.put("Netty", Arrays.asList("netty", "nio", "网络编程", "socket", "tcp", "udp", "异步"));
+        keywords.put("MySQL", Arrays.asList("mysql", "数据库", "sql", "关系数据库", "jdbc"));
+        keywords.put("Redis", Arrays.asList("redis", "缓存", "cache", "nosql", "内存数据库"));
+        keywords.put("Docker", Arrays.asList("docker", "容器", "container", "微服务", "k8s", "kubernetes"));
+        keywords.put("Java", Arrays.asList("java", "jvm", "多线程", "并发", "集合", "泛型"));
+        TECHNOLOGY_KEYWORDS = Collections.unmodifiableMap(keywords);
+    }
     
     // 技能水平关键词
-    private static final Map<UserLevel, List<String>> LEVEL_KEYWORDS = Map.of(
-        UserLevel.BEGINNER, Arrays.asList("初学者", "新手", "刚开始", "零基础", "不会", "不懂", "菜鸟"),
-        UserLevel.INTERMEDIATE, Arrays.asList("有点经验", "一般", "了解一些", "会一点", "中等", "有基础"),
-        UserLevel.ADVANCED, Arrays.asList("熟练", "经验丰富", "很熟悉", "专家", "精通", "资深")
-    );
+    private static final Map<UserLevel, List<String>> LEVEL_KEYWORDS;
+    static {
+        Map<UserLevel, List<String>> levels = new HashMap<>();
+        levels.put(UserLevel.BEGINNER, Arrays.asList("初学者", "新手", "刚开始", "零基础", "不会", "不懂", "菜鸟"));
+        levels.put(UserLevel.INTERMEDIATE, Arrays.asList("有点经验", "一般", "了解一些", "会一点", "中等", "有基础"));
+        levels.put(UserLevel.ADVANCED, Arrays.asList("熟练", "经验丰富", "很熟悉", "专家", "精通", "资深"));
+        LEVEL_KEYWORDS = Collections.unmodifiableMap(levels);
+    }
     
     // 意图关键词
-    private static final Map<String, List<String>> INTENT_KEYWORDS = Map.of(
-        "set_learning_goal", Arrays.asList("学习", "想学", "掌握", "了解", "深入", "提升"),
-        "ask_question", Arrays.asList("什么是", "如何", "怎么", "为什么", "问题"),
-        "get_help", Arrays.asList("帮助", "帮忙", "协助", "指导"),
-        "show_progress", Arrays.asList("进度", "完成", "学了", "掌握了"),
-        "request_review", Arrays.asList("检查", "review", "评估", "反馈")
-    );
+    private static final Map<String, List<String>> INTENT_KEYWORDS;
+    static {
+        Map<String, List<String>> intents = new HashMap<>();
+        intents.put("set_learning_goal", Arrays.asList("学习", "想学", "掌握", "了解", "深入", "提升"));
+        intents.put("ask_question", Arrays.asList("什么是", "如何", "怎么", "为什么", "问题"));
+        intents.put("get_help", Arrays.asList("帮助", "帮忙", "协助", "指导"));
+        intents.put("show_progress", Arrays.asList("进度", "完成", "学了", "掌握了"));
+        intents.put("request_review", Arrays.asList("检查", "review", "评估", "反馈"));
+        INTENT_KEYWORDS = Collections.unmodifiableMap(intents);
+    }
     
     public String extractIntent(String message, ConversationState state) {
         log.debug("Extracting intent from message: {}", message);

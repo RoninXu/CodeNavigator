@@ -8,10 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -19,34 +17,53 @@ import java.util.Arrays;
 public class TaskDifficultyAssessor {
     
     // 模块类型基础难度权重
-    private static final Map<ModuleType, Double> MODULE_TYPE_WEIGHTS = Map.of(
-        ModuleType.THEORY, 1.0,
-        ModuleType.PRACTICE, 1.5,
-        ModuleType.PROJECT, 2.0,
-        ModuleType.TUTORIAL, 1.2,
-        ModuleType.QUIZ, 0.8
-    );
+    private static final Map<ModuleType, Double> MODULE_TYPE_WEIGHTS;
+    static {
+        Map<ModuleType, Double> weights = new HashMap<>();
+        weights.put(ModuleType.THEORY, 1.0);
+        weights.put(ModuleType.PRACTICE, 1.5);
+        weights.put(ModuleType.PROJECT, 2.0);
+        weights.put(ModuleType.TUTORIAL, 1.2);
+        weights.put(ModuleType.QUIZ, 0.8);
+        MODULE_TYPE_WEIGHTS = Collections.unmodifiableMap(weights);
+    }
     
     // 技术复杂度评分
-    private static final Map<String, Double> TECHNOLOGY_COMPLEXITY = Map.of(
-        "Spring", 1.5,
-        "Kafka", 2.0,
-        "Netty", 2.5,
-        "MySQL", 1.3,
-        "Redis", 1.4,
-        "Docker", 1.6,
-        "Kubernetes", 2.8,
-        "Java", 1.0
-    );
+    private static final Map<String, Double> TECHNOLOGY_COMPLEXITY;
+    static {
+        Map<String, Double> complexity = new HashMap<>();
+        complexity.put("Spring", 1.5);
+        complexity.put("Kafka", 2.0);
+        complexity.put("Netty", 2.5);
+        complexity.put("MySQL", 1.3);
+        complexity.put("Redis", 1.4);
+        complexity.put("Docker", 1.6);
+        complexity.put("Kubernetes", 2.8);
+        complexity.put("Java", 1.0);
+        TECHNOLOGY_COMPLEXITY = Collections.unmodifiableMap(complexity);
+    }
     
     // 概念复杂度关键词
-    private static final Map<String, Double> CONCEPT_COMPLEXITY = Map.of(
-        "基础", 0.5, "入门", 0.5, "简介", 0.5,
-        "进阶", 1.5, "高级", 2.0, "深入", 2.2,
-        "架构", 2.0, "设计模式", 2.3, "源码", 2.5,
-        "性能", 2.0, "调优", 2.3, "监控", 1.8,
-        "分布式", 2.8, "微服务", 2.5, "集群", 2.2
-    );
+    private static final Map<String, Double> CONCEPT_COMPLEXITY;
+    static {
+        Map<String, Double> concepts = new HashMap<>();
+        concepts.put("基础", 0.5);
+        concepts.put("入门", 0.5);
+        concepts.put("简介", 0.5);
+        concepts.put("进阶", 1.5);
+        concepts.put("高级", 2.0);
+        concepts.put("深入", 2.2);
+        concepts.put("架构", 2.0);
+        concepts.put("设计模式", 2.3);
+        concepts.put("源码", 2.5);
+        concepts.put("性能", 2.0);
+        concepts.put("调优", 2.3);
+        concepts.put("监控", 1.8);
+        concepts.put("分布式", 2.8);
+        concepts.put("微服务", 2.5);
+        concepts.put("集群", 2.2);
+        CONCEPT_COMPLEXITY = Collections.unmodifiableMap(concepts);
+    }
     
     public DifficultyLevel assessModuleDifficulty(LearningModule module, String technology) {
         log.debug("Assessing difficulty for module: {}", module.getTitle());
