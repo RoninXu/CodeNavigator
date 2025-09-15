@@ -1,0 +1,66 @@
+spring:
+  profiles:
+    active: test
+    
+  application:
+    name: codenavigator-test
+    
+  # 使用H2内存数据库进行测试
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    username: sa
+    password: 
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+        
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        format_sql: true
+        
+  # 禁用Redis用于测试
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      timeout: 1000ms
+      
+server:
+  port: 8081
+  
+# LangChain4j配置（测试环境）
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: ${OPENAI_API_KEY:test-key}
+      model-name: gpt-3.5-turbo
+      temperature: 0.7
+      
+# 应用业务配置
+codenavigator:
+  ai:
+    conversation-timeout: 10000
+    max-conversation-turns: 10
+  learning:
+    max-concurrent-paths: 2
+    session-timeout: 1800
+    
+logging:
+  level:
+    com.codenavigator: INFO
+    org.springframework: WARN
+    org.hibernate.SQL: DEBUG

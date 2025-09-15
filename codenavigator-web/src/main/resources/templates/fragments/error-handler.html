@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- 全局错误处理组件 -->
+    <div th:fragment="error-handler">
+        <!-- 全局错误弹窗 -->
+        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="errorModalLabel">
+                            <i class="bi bi-exclamation-triangle me-2"></i>发生错误
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="关闭"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="bi bi-exclamation-circle-fill text-danger fs-2"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2" id="errorTitle">系统错误</h6>
+                                <p class="mb-2" id="errorMessage">抱歉，系统遇到了一些问题。</p>
+                                <div class="collapse" id="errorDetails">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title">错误详情:</h6>
+                                            <pre class="mb-0" id="errorDetailText"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#errorDetails">
+                            <i class="bi bi-info-circle me-1"></i>查看详情
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="retryLastAction()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>重试
+                        </button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                            <i class="bi bi-check-lg me-1"></i>确定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 网络状态指示器 -->
+        <div id="networkStatus" class="network-status d-none">
+            <div class="network-status-content">
+                <i class="bi bi-wifi-off me-2"></i>
+                <span>网络连接已断开</span>
+                <button class="btn btn-sm btn-outline-light ms-2" onclick="checkNetworkStatus()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 帮助引导浮窗 -->
+        <div class="help-float" id="helpFloat">
+            <button class="help-float-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-question-circle-fill"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><h6 class="dropdown-header">需要帮助？</h6></li>
+                <li><a class="dropdown-item" href="/getting-started">
+                    <i class="bi bi-rocket-takeoff me-2"></i>快速开始
+                </a></li>
+                <li><a class="dropdown-item" href="/conversation?topic=help">
+                    <i class="bi bi-chat-dots me-2"></i>AI助手帮助
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="showKeyboardShortcuts()">
+                    <i class="bi bi-keyboard me-2"></i>快捷键
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/help">
+                    <i class="bi bi-book me-2"></i>帮助文档
+                </a></li>
+                <li><a class="dropdown-item" href="/feedback">
+                    <i class="bi bi-bug me-2"></i>反馈问题
+                </a></li>
+            </ul>
+        </div>
+
+        <!-- 键盘快捷键帮助 -->
+        <div class="modal fade" id="shortcutsModal" tabindex="-1" aria-labelledby="shortcutsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="shortcutsModalLabel">
+                            <i class="bi bi-keyboard me-2"></i>键盘快捷键
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>通用快捷键:</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <kbd>Ctrl</kbd> + <kbd>K</kbd> <small class="text-muted">聚焦搜索框</small>
+                                    </li>
+                                    <li class="mb-2">
+                                        <kbd>Ctrl</kbd> + <kbd>/</kbd> <small class="text-muted">显示帮助</small>
+                                    </li>
+                                    <li class="mb-2">
+                                        <kbd>Esc</kbd> <small class="text-muted">关闭弹窗</small>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>对话页面:</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <kbd>Ctrl</kbd> + <kbd>Enter</kbd> <small class="text-muted">发送消息</small>
+                                    </li>
+                                    <li class="mb-2">
+                                        <kbd>↑</kbd> / <kbd>↓</kbd> <small class="text-muted">历史消息</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 首次访问引导 -->
+        <div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="welcomeModalLabel">
+                            <i class="bi bi-star-fill me-2"></i>欢迎来到 CodeNavigator！
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="关闭"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <div class="welcome-logo">
+                                <i class="bi bi-compass"></i>
+                            </div>
+                            <h4 class="mt-3">开启您的AI驱动编程学习之旅</h4>
+                            <p class="text-muted">让我们为您介绍平台的主要功能</p>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-4 text-center">
+                                <div class="feature-icon bg-primary text-white">
+                                    <i class="bi bi-robot"></i>
+                                </div>
+                                <h6 class="mt-2">AI助手</h6>
+                                <small class="text-muted">24/7智能编程导师</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="feature-icon bg-success text-white">
+                                    <i class="bi bi-map"></i>
+                                </div>
+                                <h6 class="mt-2">学习路径</h6>
+                                <small class="text-muted">个性化学习计划</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="feature-icon bg-info text-white">
+                                    <i class="bi bi-search"></i>
+                                </div>
+                                <h6 class="mt-2">代码分析</h6>
+                                <small class="text-muted">智能代码质量评估</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            跳过引导
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="startGuidedTour()">
+                            <i class="bi bi-arrow-right me-1"></i>开始体验
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .network-status {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1055;
+            animation: slideDown 0.3s ease;
+        }
+
+        .network-status-content {
+            background: #dc3545;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .help-float {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1050;
+        }
+
+        .help-float-btn {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .help-float-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+        }
+
+        .welcome-logo {
+            width: 4rem;
+            height: 4rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto;
+        }
+
+        .feature-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin: 0 auto;
+        }
+
+        kbd {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 0.125rem 0.25rem;
+            font-size: 0.875em;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .help-float {
+                bottom: 1rem;
+                right: 1rem;
+            }
+
+            .help-float-btn {
+                width: 3rem;
+                height: 3rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+
+    <script>
+        // 全局错误处理器
+        window.ErrorHandler = {
+            lastAction: null,
+
+            // 显示错误信息
+            showError: function(title, message, details = null) {
+                document.getElementById('errorTitle').textContent = title || '系统错误';
+                document.getElementById('errorMessage').textContent = message || '发生了未知错误';
+                
+                if (details) {
+                    document.getElementById('errorDetailText').textContent = details;
+                } else {
+                    document.getElementById('errorDetails').classList.add('d-none');
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+                modal.show();
+
+                // 记录错误到控制台
+                console.error('Error:', title, message, details);
+            },
+
+            // 设置重试操作
+            setRetryAction: function(action) {
+                this.lastAction = action;
+            },
+
+            // 重试上次操作
+            retry: function() {
+                if (this.lastAction && typeof this.lastAction === 'function') {
+                    this.lastAction();
+                    bootstrap.Modal.getInstance(document.getElementById('errorModal')).hide();
+                }
+            },
+
+            // 处理网络错误
+            handleNetworkError: function() {
+                this.showNetworkStatus(false);
+                this.showError(
+                    '网络连接错误',
+                    '无法连接到服务器，请检查您的网络连接。',
+                    '如果问题持续存在，请联系技术支持。'
+                );
+            },
+
+            // 显示网络状态
+            showNetworkStatus: function(online) {
+                const statusEl = document.getElementById('networkStatus');
+                if (!online) {
+                    statusEl.classList.remove('d-none');
+                } else {
+                    statusEl.classList.add('d-none');
+                }
+            },
+
+            // 检查是否为首次访问
+            checkFirstVisit: function() {
+                const hasVisited = localStorage.getItem('hasVisited');
+                if (!hasVisited) {
+                    setTimeout(() => {
+                        const modal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+                        modal.show();
+                        localStorage.setItem('hasVisited', 'true');
+                    }, 1000);
+                }
+            }
+        };
+
+        // 全局函数
+        function retryLastAction() {
+            ErrorHandler.retry();
+        }
+
+        function checkNetworkStatus() {
+            if (navigator.onLine) {
+                ErrorHandler.showNetworkStatus(true);
+                window.location.reload();
+            } else {
+                ErrorHandler.showError('网络连接错误', '网络仍然不可用，请检查您的连接设置。');
+            }
+        }
+
+        function showKeyboardShortcuts() {
+            const modal = new bootstrap.Modal(document.getElementById('shortcutsModal'));
+            modal.show();
+        }
+
+        function startGuidedTour() {
+            bootstrap.Modal.getInstance(document.getElementById('welcomeModal')).hide();
+            window.location.href = '/getting-started';
+        }
+
+        // 初始化错误处理
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查首次访问
+            ErrorHandler.checkFirstVisit();
+
+            // 网络状态监听
+            window.addEventListener('online', () => ErrorHandler.showNetworkStatus(true));
+            window.addEventListener('offline', () => ErrorHandler.showNetworkStatus(false));
+
+            // 全局键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case '/':
+                            e.preventDefault();
+                            showKeyboardShortcuts();
+                            break;
+                    }
+                }
+
+                // ESC 关闭弹窗
+                if (e.key === 'Escape') {
+                    const openModals = document.querySelectorAll('.modal.show');
+                    if (openModals.length > 0) {
+                        const topModal = openModals[openModals.length - 1];
+                        bootstrap.Modal.getInstance(topModal).hide();
+                    }
+                }
+            });
+
+            // 全局错误捕获
+            window.addEventListener('error', function(e) {
+                ErrorHandler.showError(
+                    'JavaScript错误',
+                    '页面发生了脚本错误，这可能影响某些功能的正常使用。',
+                    e.message + ' at ' + e.filename + ':' + e.lineno
+                );
+            });
+
+            // 未处理的Promise拒绝
+            window.addEventListener('unhandledrejection', function(e) {
+                ErrorHandler.showError(
+                    '异步操作错误',
+                    '发生了未处理的异步错误。',
+                    e.reason
+                );
+            });
+        });
+    </script>
+</body>
+</html>

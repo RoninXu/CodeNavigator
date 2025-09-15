@@ -1,0 +1,166 @@
+# Filebeat日志收集配置
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+# 日志输入配置
+filebeat.inputs:
+  # CodeNavigator应用日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/codenavigator/*.log
+    fields:
+      service: codenavigator-app
+      environment: production
+      log_type: application
+    fields_under_root: true
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    multiline.max_lines: 500
+    exclude_lines: ['^DEBUG']
+    
+  # Nginx访问日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/access.log
+    fields:
+      service: nginx
+      environment: production
+      log_type: access
+    fields_under_root: true
+    
+  # Nginx错误日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/error.log
+    fields:
+      service: nginx
+      environment: production
+      log_type: error
+    fields_under_root: true
+    multiline.pattern: '^\d{4}/\d{2}/\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    
+  # MySQL慢查询日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/mysql/slow.log
+    fields:
+      service: mysql
+      environment: production
+      log_type: slow_query
+    fields_under_root: true
+    multiline.pattern: '^# Time:'
+    multiline.negate: true
+    multiline.match: after
+    
+  # MySQL错误日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/mysql/error.log
+    fields:
+      service: mysql
+      environment: production
+      log_type: error
+    fields_under_root: true
+
+  # Docker容器日志
+  - type: container
+    enabled: true
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+    stream: all
+    format: auto
+    fields:
+      environment: production
+      log_type: container
+    fields_under_root: true
+
+# 处理器配置
+processors:
+  # 添加Docker元数据
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+      
+  # 添加主机信息
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+      
+  # 时间戳处理
+  - timestamp:
+      field: "@timestamp"
+      layouts:
+        - '2006-01-02 15:04:05.000'
+        - '2006-01-02T15:04:05.000Z'
+      test:
+        - '2023-12-01 14:30:15.123'
+        
+  # 字段重命名和清理
+  - rename:
+      fields:
+        - from: "agent"
+          to: "filebeat_agent"
+      ignore_missing: true
+      
+  # 删除不需要的字段
+  - drop_fields:
+      fields: ["input", "ecs", "host.architecture", "host.os.platform"]
+
+# 输出配置
+output.elasticsearch:
+  hosts: ["${ELASTICSEARCH_HOST:elasticsearch:9200}"]
+  protocol: "http"
+  username: "${ELASTICSEARCH_USERNAME:}"
+  password: "${ELASTICSEARCH_PASSWORD:}"
+  index: "codenavigator-logs-%{+yyyy.MM.dd}"
+  template.name: "codenavigator"
+  template.pattern: "codenavigator-logs-*"
+  template.settings:
+    index.number_of_shards: 1
+    index.number_of_replicas: 0
+    index.codec: best_compression
+    index.refresh_interval: 5s
+    index.max_result_window: 50000
+
+# 日志配置
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+# 监控配置
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["${ELASTICSEARCH_HOST:elasticsearch:9200}"]
+
+# 性能配置
+queue.mem:
+  events: 4096
+  flush.min_events: 512
+  flush.timeout: 1s
+
+# 安全配置
+ssl.verification_mode: none
+
+# 模板配置
+setup.template.enabled: true
+setup.template.fields: "fields.yml"
+setup.template.name: "codenavigator"
+setup.template.pattern: "codenavigator-logs-*"
+
+# ILM配置
+setup.ilm.enabled: true
+setup.ilm.rollover_alias: "codenavigator-logs"
+setup.ilm.pattern: "{now/d}-000001"
+setup.ilm.policy: "codenavigator-policy"

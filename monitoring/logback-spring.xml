@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProfile name="!prod">
+        <!-- 开发环境日志配置 -->
+        <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+        <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+        
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        
+        <logger name="com.codenavigator" level="DEBUG"/>
+        <logger name="org.springframework.cache" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="prod">
+        <!-- 生产环境日志配置 -->
+        <property name="LOG_PATH" value="${LOG_PATH:-/var/log/codenavigator}"/>
+        <property name="APP_NAME" value="codenavigator"/>
+        
+        <!-- 控制台输出 -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <logLevel/>
+                    <loggerName/>
+                    <mdc/>
+                    <arguments/>
+                    <stackTrace/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "level": "%level",
+                                "thread": "%thread",
+                                "logger": "%logger{50}",
+                                "message": "%message",
+                                "service": "${APP_NAME}",
+                                "environment": "production"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+        </appender>
+
+        <!-- 文件输出 - 所有日志 -->
+        <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_PATH}/${APP_NAME}.log</file>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <logLevel/>
+                    <loggerName/>
+                    <mdc/>
+                    <arguments/>
+                    <stackTrace/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "level": "%level",
+                                "thread": "%thread",
+                                "logger": "%logger{50}",
+                                "message": "%message",
+                                "service": "${APP_NAME}",
+                                "environment": "production",
+                                "traceId": "%X{traceId:-}",
+                                "spanId": "%X{spanId:-}",
+                                "userId": "%X{userId:-}"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>100MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>3GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- 错误日志单独输出 -->
+        <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_PATH}/${APP_NAME}-error.log</file>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <logLevel/>
+                    <loggerName/>
+                    <mdc/>
+                    <arguments/>
+                    <stackTrace/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "level": "%level",
+                                "thread": "%thread",
+                                "logger": "%logger{50}",
+                                "message": "%message",
+                                "service": "${APP_NAME}",
+                                "environment": "production",
+                                "traceId": "%X{traceId:-}",
+                                "spanId": "%X{spanId:-}",
+                                "userId": "%X{userId:-}",
+                                "exception": "%exception"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_PATH}/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>50MB</maxFileSize>
+                <maxHistory>60</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- 性能日志 -->
+        <appender name="FILE_PERFORMANCE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_PATH}/${APP_NAME}-performance.log</file>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <mdc/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "service": "${APP_NAME}",
+                                "environment": "production",
+                                "type": "performance",
+                                "uri": "%X{requestURI:-}",
+                                "method": "%X{requestMethod:-}",
+                                "duration": "%X{requestDuration:-}",
+                                "status": "%X{responseStatus:-}",
+                                "traceId": "%X{traceId:-}",
+                                "userId": "%X{userId:-}"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_PATH}/${APP_NAME}-performance.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>50MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- 业务日志 -->
+        <appender name="FILE_BUSINESS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_PATH}/${APP_NAME}-business.log</file>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <logLevel/>
+                    <loggerName/>
+                    <mdc/>
+                    <arguments/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "level": "%level",
+                                "logger": "%logger{50}",
+                                "message": "%message",
+                                "service": "${APP_NAME}",
+                                "environment": "production",
+                                "type": "business",
+                                "userId": "%X{userId:-}",
+                                "action": "%X{action:-}",
+                                "resource": "%X{resource:-}",
+                                "result": "%X{result:-}"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_PATH}/${APP_NAME}-business.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>50MB</maxFileSize>
+                <maxHistory>90</maxHistory>
+                <totalSizeCap>2GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- 异步日志配置 -->
+        <appender name="ASYNC_FILE_ALL" class="ch.qos.logback.classic.AsyncAppender">
+            <discardingThreshold>0</discardingThreshold>
+            <queueSize>1024</queueSize>
+            <neverBlock>true</neverBlock>
+            <includeCallerData>false</includeCallerData>
+            <appender-ref ref="FILE_ALL"/>
+        </appender>
+
+        <appender name="ASYNC_FILE_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+            <discardingThreshold>0</discardingThreshold>
+            <queueSize>256</queueSize>
+            <neverBlock>false</neverBlock>
+            <includeCallerData>true</includeCallerData>
+            <appender-ref ref="FILE_ERROR"/>
+        </appender>
+
+        <!-- 根日志配置 -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE_ALL"/>
+            <appender-ref ref="ASYNC_FILE_ERROR"/>
+        </root>
+
+        <!-- 特定logger配置 -->
+        <logger name="com.codenavigator" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE_ALL"/>
+            <appender-ref ref="ASYNC_FILE_ERROR"/>
+            <appender-ref ref="FILE_BUSINESS"/>
+        </logger>
+
+        <logger name="com.codenavigator.web.interceptor.PerformanceInterceptor" level="INFO" additivity="false">
+            <appender-ref ref="FILE_PERFORMANCE"/>
+        </logger>
+
+        <!-- 第三方库日志级别 -->
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+        <logger name="org.apache.catalina" level="WARN"/>
+        <logger name="org.springframework.web.servlet.DispatcherServlet" level="INFO"/>
+        <logger name="org.springframework.cache" level="WARN"/>
+        <logger name="io.lettuce.core" level="WARN"/>
+        
+        <!-- 安全相关日志 -->
+        <logger name="org.springframework.security" level="INFO"/>
+        <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
+    </springProfile>
+</configuration>

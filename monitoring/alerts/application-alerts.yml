@@ -1,0 +1,151 @@
+# CodeNavigator应用告警规则
+groups:
+  - name: codenavigator-application
+    rules:
+      # 应用健康检查失败
+      - alert: ApplicationDown
+        expr: up{job="codenavigator-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: codenavigator
+        annotations:
+          summary: "CodeNavigator应用不可用"
+          description: "CodeNavigator应用已下线超过1分钟"
+
+      # HTTP错误率过高
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_total{status=~"5.."}[5m]) / rate(http_server_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: codenavigator
+        annotations:
+          summary: "HTTP错误率过高"
+          description: "HTTP 5xx错误率超过5%，当前值: {{ $value | humanizePercentage }}"
+
+      # 响应时间过慢
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_server_requests_duration_seconds_bucket[5m])) > 2
+        for: 10m
+        labels:
+          severity: warning
+          service: codenavigator
+        annotations:
+          summary: "API响应时间过慢"
+          description: "95%请求响应时间超过2秒，当前值: {{ $value }}s"
+
+      # JVM内存使用率过高
+      - alert: HighMemoryUsage
+        expr: (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          service: codenavigator
+        annotations:
+          summary: "JVM内存使用率过高"
+          description: "堆内存使用率超过80%，当前值: {{ $value | humanizePercentage }}"
+
+      # GC时间过长
+      - alert: HighGCTime
+        expr: rate(jvm_gc_pause_seconds_sum[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: codenavigator
+        annotations:
+          summary: "GC时间过长"
+          description: "GC占用时间超过10%，当前值: {{ $value | humanizePercentage }}"
+
+      # 线程池使用率过高
+      - alert: HighThreadPoolUsage
+        expr: (tomcat_threads_busy_threads / tomcat_threads_config_max_threads) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: codenavigator
+        annotations:
+          summary: "线程池使用率过高"
+          description: "Tomcat线程池使用率超过80%，当前值: {{ $value | humanizePercentage }}"
+
+      # 数据库连接池耗尽
+      - alert: DatabaseConnectionPoolExhausted
+        expr: hikaricp_connections_active >= hikaricp_connections_max
+        for: 2m
+        labels:
+          severity: critical
+          service: codenavigator
+        annotations:
+          summary: "数据库连接池耗尽"
+          description: "HikariCP连接池已满，活跃连接数: {{ $value }}"
+
+      # Redis连接失败
+      - alert: RedisConnectionFailure
+        expr: increase(lettuce_command_completion_total{command="PING",status="failed"}[5m]) > 0
+        for: 3m
+        labels:
+          severity: warning
+          service: codenavigator
+        annotations:
+          summary: "Redis连接失败"
+          description: "Redis连接出现失败，失败次数: {{ $value }}"
+
+      # 磁盘空间不足
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: codenavigator
+        annotations:
+          summary: "磁盘空间不足"
+          description: "根分区可用空间少于10%，剩余: {{ $value | humanizePercentage }}"
+
+      # CPU使用率过高
+      - alert: HighCPUUsage
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: codenavigator
+        annotations:
+          summary: "CPU使用率过高"
+          description: "CPU使用率超过80%，当前值: {{ $value }}%"
+
+  - name: codenavigator-business
+    rules:
+      # 用户注册失败率过高
+      - alert: HighUserRegistrationFailureRate
+        expr: rate(http_server_requests_total{uri="/api/auth/register",status=~"4.."}[10m]) / rate(http_server_requests_total{uri="/api/auth/register"}[10m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          service: codenavigator
+          business: user_management
+        annotations:
+          summary: "用户注册失败率过高"
+          description: "用户注册失败率超过10%，可能存在系统问题"
+
+      # AI服务响应异常
+      - alert: AIServiceTimeout
+        expr: rate(http_server_requests_total{uri=~"/api/ai/.*",status="504"}[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: codenavigator
+          business: ai_service
+        annotations:
+          summary: "AI服务超时"
+          description: "AI服务出现超时响应，可能影响用户体验"
+
+      # 文件上传失败
+      - alert: FileUploadFailure
+        expr: rate(http_server_requests_total{uri="/api/files/upload",status=~"5.."}[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: codenavigator
+          business: file_service
+        annotations:
+          summary: "文件上传服务异常"
+          description: "文件上传出现服务器错误，需要检查存储服务"

@@ -1,0 +1,231 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "CodeNavigator 生产监控仪表板",
+    "tags": ["codenavigator", "production"],
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "应用健康状态",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"codenavigator-app\"}",
+            "legendFormat": "应用状态"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            },
+            "mappings": [
+              {"options": {"0": {"text": "离线"}}, "type": "value"},
+              {"options": {"1": {"text": "在线"}}, "type": "value"}
+            ]
+          }
+        },
+        "gridPos": {"h": 3, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "HTTP请求速率",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_server_requests_total[5m])",
+            "legendFormat": "{{method}} {{uri}}"
+          }
+        ],
+        "yAxes": [
+          {"label": "请求/秒", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "响应时间分布",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_server_requests_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.90, rate(http_server_requests_duration_seconds_bucket[5m]))",
+            "legendFormat": "90th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_server_requests_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_server_requests_duration_seconds_bucket[5m]))",
+            "legendFormat": "99th percentile"
+          }
+        ],
+        "yAxes": [
+          {"label": "秒", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "HTTP错误率",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_server_requests_total{status=~\"4..\"}[5m])",
+            "legendFormat": "4xx错误"
+          },
+          {
+            "expr": "rate(http_server_requests_total{status=~\"5..\"}[5m])",
+            "legendFormat": "5xx错误"
+          }
+        ],
+        "yAxes": [
+          {"label": "错误/秒", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "JVM内存使用",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{area=\"heap\"}",
+            "legendFormat": "堆内存使用"
+          },
+          {
+            "expr": "jvm_memory_max_bytes{area=\"heap\"}",
+            "legendFormat": "堆内存最大值"
+          },
+          {
+            "expr": "jvm_memory_used_bytes{area=\"nonheap\"}",
+            "legendFormat": "非堆内存使用"
+          }
+        ],
+        "yAxes": [
+          {"label": "字节", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "GC活动",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(jvm_gc_pause_seconds_sum[5m])",
+            "legendFormat": "GC时间占比"
+          },
+          {
+            "expr": "rate(jvm_gc_pause_seconds_count[5m])",
+            "legendFormat": "GC频率"
+          }
+        ],
+        "yAxes": [
+          {"label": "秒/频率", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 7,
+        "title": "数据库连接池",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "hikaricp_connections_active",
+            "legendFormat": "活跃连接"
+          },
+          {
+            "expr": "hikaricp_connections_max",
+            "legendFormat": "最大连接"
+          },
+          {
+            "expr": "hikaricp_connections_idle",
+            "legendFormat": "空闲连接"
+          }
+        ],
+        "yAxes": [
+          {"label": "连接数", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 8,
+        "title": "Redis操作",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(lettuce_command_completion_total[5m])",
+            "legendFormat": "{{command}} - {{status}}"
+          }
+        ],
+        "yAxes": [
+          {"label": "操作/秒", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      },
+      {
+        "id": 9,
+        "title": "线程池使用",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "tomcat_threads_busy_threads",
+            "legendFormat": "忙碌线程"
+          },
+          {
+            "expr": "tomcat_threads_config_max_threads",
+            "legendFormat": "最大线程"
+          },
+          {
+            "expr": "tomcat_threads_current_threads",
+            "legendFormat": "当前线程"
+          }
+        ],
+        "yAxes": [
+          {"label": "线程数", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32}
+      },
+      {
+        "id": 10,
+        "title": "系统资源使用",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "CPU使用率"
+          },
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+            "legendFormat": "内存使用率"
+          },
+          {
+            "expr": "(1 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"})) * 100",
+            "legendFormat": "磁盘使用率"
+          }
+        ],
+        "yAxes": [
+          {"label": "百分比", "min": 0, "max": 100}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+      }
+    ]
+  }
+}

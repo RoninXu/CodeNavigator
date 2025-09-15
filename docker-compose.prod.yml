@@ -1,0 +1,353 @@
+version: '3.8'
+
+services:
+  # CodeNavigator应用
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: codenavigator-app
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=code_navigator
+      - DB_USERNAME=codenavigator
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_POOL_SIZE=20
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERVER_PORT=8080
+      - JAVA_OPTS=-server -Xms1g -Xmx2g -XX:+UseG1GC -XX:+UseStringDeduplication -XX:MaxGCPauseMillis=200
+      - LOG_PATH=/var/log/codenavigator
+    ports:
+      - "8080:8080"
+    volumes:
+      - app-logs:/var/log/codenavigator
+      - app-uploads:/var/lib/codenavigator/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codenavigator-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: codenavigator-mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=code_navigator
+      - MYSQL_USER=codenavigator
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_CHARSET=utf8mb4
+      - MYSQL_COLLATION=utf8mb4_unicode_ci
+    command: --default-authentication-plugin=mysql_native_password
+             --innodb-buffer-pool-size=512M
+             --innodb-log-file-size=64M
+             --max-connections=200
+             --slow-query-log=1
+             --slow-query-log-file=/var/log/mysql/slow.log
+             --long-query-time=2
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - mysql-logs:/var/log/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - codenavigator-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "codenavigator", "-p${DB_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: codenavigator-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+             --maxmemory 256mb
+             --maxmemory-policy allkeys-lru
+             --save 900 1
+             --save 300 10
+             --save 60 10000
+             --appendonly yes
+             --appendfsync everysec
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - codenavigator-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: codenavigator-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - codenavigator-network
+
+  # Prometheus监控
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: codenavigator-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - codenavigator-network
+    depends_on:
+      - app
+
+  # Grafana可视化
+  grafana:
+    image: grafana/grafana:latest
+    container_name: codenavigator-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - codenavigator-network
+    depends_on:
+      - prometheus
+
+  # MySQL监控导出器
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: codenavigator-mysql-exporter
+    restart: unless-stopped
+    environment:
+      - DATA_SOURCE_NAME=codenavigator:${DB_PASSWORD}@(mysql:3306)/code_navigator
+    ports:
+      - "9104:9104"
+    networks:
+      - codenavigator-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # Redis监控导出器
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: codenavigator-redis-exporter
+    restart: unless-stopped
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "9121:9121"
+    networks:
+      - codenavigator-network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # Nginx监控导出器
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: codenavigator-nginx-exporter
+    restart: unless-stopped
+    command:
+      - '-nginx.scrape-uri=http://nginx:80/nginx_status'
+    ports:
+      - "9113:9113"
+    networks:
+      - codenavigator-network
+    depends_on:
+      - nginx
+
+  # 系统监控导出器
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: codenavigator-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - codenavigator-network
+
+  # 容器监控
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: codenavigator-cadvisor
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    networks:
+      - codenavigator-network
+
+  # AlertManager告警管理
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: codenavigator-alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+      - '--cluster.advertise-address=0.0.0.0:9093'
+    networks:
+      - codenavigator-network
+
+  # Elasticsearch (可选)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: codenavigator-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1g"
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - codenavigator-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana (可选)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: codenavigator-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+    ports:
+      - "5601:5601"
+    networks:
+      - codenavigator-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # 日志收集
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.8.0
+    container_name: codenavigator-filebeat
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./monitoring/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./monitoring/logback-spring.xml:/usr/share/filebeat/logback-spring.xml:ro
+      - app-logs:/var/log/codenavigator:ro
+      - mysql-logs:/var/log/mysql:ro
+      - nginx-logs:/var/log/nginx:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+    networks:
+      - codenavigator-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
+    driver: local
+  mysql-logs:
+    driver: local
+  redis-data:
+    driver: local
+  app-logs:
+    driver: local
+  app-uploads:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  nginx-logs:
+    driver: local
+  alertmanager-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
+
+networks:
+  codenavigator-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

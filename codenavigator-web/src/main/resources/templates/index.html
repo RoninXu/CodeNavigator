@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" 
+      th:replace="~{layout/base :: html(pageTitle='首页 - CodeNavigator', showSidebar=false, activeNav='home')}">
+<head>
+    <th:block th:fragment="styles">
+        <style>
+            /* 首页特定样式 */
+            .hero-section {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 4rem 0;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .hero-section::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>') no-repeat bottom;
+                background-size: cover;
+            }
+            
+            .hero-content {
+                position: relative;
+                z-index: 1;
+            }
+            
+            .hero-title {
+                font-size: 3.5rem;
+                font-weight: 700;
+                margin-bottom: 1.5rem;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            
+            .hero-subtitle {
+                font-size: 1.25rem;
+                margin-bottom: 2rem;
+                opacity: 0.9;
+            }
+            
+            .feature-card {
+                border: none;
+                border-radius: 1rem;
+                transition: all 0.3s ease;
+                height: 100%;
+                background: white;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            
+            .feature-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+            }
+            
+            .feature-icon {
+                width: 4rem;
+                height: 4rem;
+                border-radius: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                color: white;
+                margin: 0 auto 1.5rem;
+            }
+            
+            .feature-icon.ai {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            
+            .feature-icon.analysis {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }
+            
+            .feature-icon.learning {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            }
+            
+            .feature-icon.progress {
+                background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            }
+            
+            .stats-section {
+                background: var(--light-bg);
+                padding: 3rem 0;
+            }
+            
+            .stat-item {
+                text-align: center;
+                padding: 2rem;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+                font-weight: 700;
+                color: var(--primary-color);
+                display: block;
+            }
+            
+            .stat-label {
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .cta-section {
+                background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+                color: white;
+                padding: 4rem 0;
+                text-align: center;
+            }
+            
+            .testimonial-card {
+                background: white;
+                border-radius: 1rem;
+                padding: 2rem;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                margin-bottom: 2rem;
+                position: relative;
+            }
+            
+            .testimonial-card::before {
+                content: '"';
+                position: absolute;
+                top: -10px;
+                left: 20px;
+                font-size: 4rem;
+                color: var(--primary-color);
+                font-family: serif;
+            }
+            
+            .testimonial-author {
+                display: flex;
+                align-items: center;
+                margin-top: 1rem;
+                gap: 1rem;
+            }
+            
+            .author-avatar {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: 600;
+            }
+            
+            @media (max-width: 768px) {
+                .hero-title {
+                    font-size: 2.5rem;
+                }
+                
+                .hero-subtitle {
+                    font-size: 1rem;
+                }
+                
+                .feature-card {
+                    margin-bottom: 2rem;
+                }
+                
+                .stat-number {
+                    font-size: 2rem;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <th:block th:fragment="content">
+        <!-- 英雄区域 -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">智能编程学习平台</h1>
+                    <p class="hero-subtitle">通过AI驱动的代码分析和个性化学习路径，提升您的编程技能</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="/learning-paths" class="btn btn-light btn-lg">
+                            <i class="bi bi-rocket-takeoff me-2"></i>开始学习
+                        </a>
+                        <a href="/code-analysis" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-search me-2"></i>代码分析
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 核心功能 -->
+        <section class="py-5">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold">核心功能特色</h2>
+                    <p class="lead text-muted">AI赋能的智能学习体验</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card feature-card">
+                            <div class="card-body text-center">
+                                <div class="feature-icon ai">
+                                    <i class="bi bi-robot"></i>
+                                </div>
+                                <h5 class="card-title">AI智能助手</h5>
+                                <p class="card-text">24/7可用的AI编程导师，提供个性化的学习指导和问题解答</p>
+                                <a href="/conversation" class="btn btn-outline-primary btn-sm">
+                                    体验助手 <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card feature-card">
+                            <div class="card-body text-center">
+                                <div class="feature-icon analysis">
+                                    <i class="bi bi-graph-up-arrow"></i>
+                                </div>
+                                <h5 class="card-title">智能代码分析</h5>
+                                <p class="card-text">深度分析代码质量，提供详细的改进建议和最佳实践指导</p>
+                                <a href="/code-analysis" class="btn btn-outline-primary btn-sm">
+                                    立即分析 <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card feature-card">
+                            <div class="card-body text-center">
+                                <div class="feature-icon learning">
+                                    <i class="bi bi-map"></i>
+                                </div>
+                                <h5 class="card-title">个性化学习路径</h5>
+                                <p class="card-text">根据您的技能水平和目标，定制专属的学习计划和进度跟踪</p>
+                                <a href="/learning-paths" class="btn btn-outline-primary btn-sm">
+                                    选择路径 <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card feature-card">
+                            <div class="card-body text-center">
+                                <div class="feature-icon progress">
+                                    <i class="bi bi-trophy"></i>
+                                </div>
+                                <h5 class="card-title">学习进度追踪</h5>
+                                <p class="card-text">可视化学习进度，技能成长轨迹，激励持续学习和提升</p>
+                                <a href="/progress" class="btn btn-outline-primary btn-sm">
+                                    查看进度 <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 统计数据 -->
+        <section class="stats-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="10000">0</span>
+                            <span class="stat-label">活跃用户</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="50000">0</span>
+                            <span class="stat-label">代码分析次数</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="500">0</span>
+                            <span class="stat-label">学习路径</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="95">0</span>
+                            <span class="stat-label">用户满意度%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 用户评价 -->
+        <section class="py-5">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold">用户评价</h2>
+                    <p class="lead text-muted">看看其他开发者怎么说</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="testimonial-card">
+                            <p class="mb-3">CodeNavigator彻底改变了我的学习方式，AI助手就像有一个24小时在线的高级导师。代码分析功能帮我发现了很多之前忽略的问题。</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">张</div>
+                                <div>
+                                    <div class="fw-semibold">张三</div>
+                                    <small class="text-muted">Java开发工程师</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="testimonial-card">
+                            <p class="mb-3">个性化学习路径真的很赞！系统会根据我的进度调整难度，让我能循序渐进地提升技能。学习进度可视化也很有激励作用。</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">李</div>
+                                <div>
+                                    <div class="fw-semibold">李四</div>
+                                    <small class="text-muted">前端开发工程师</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="testimonial-card">
+                            <p class="mb-3">作为初学者，这个平台给了我很大帮助。AI助手很耐心，会根据我的理解程度调整解释的详细程度。界面也很友好。</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">王</div>
+                                <div>
+                                    <div class="fw-semibold">王五</div>
+                                    <small class="text-muted">编程初学者</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 行动召唤 -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8 text-center">
+                        <h2 class="display-5 fw-bold mb-4">准备开始您的编程学习之旅？</h2>
+                        <p class="lead mb-4">加入我们的社区，体验AI驱动的个性化学习</p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="/register" class="btn btn-light btn-lg">
+                                <i class="bi bi-person-plus me-2"></i>立即注册
+                            </a>
+                            <a href="/demo" class="btn btn-outline-light btn-lg">
+                                <i class="bi bi-play-circle me-2"></i>观看演示
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </th:block>
+    
+    <th:block th:fragment="scripts">
+        <script>
+            // 数字动画效果
+            function animateNumbers() {
+                const stats = document.querySelectorAll('.stat-number');
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const target = parseInt(entry.target.dataset.target);
+                            const duration = 2000;
+                            const start = Date.now();
+                            
+                            function updateNumber() {
+                                const now = Date.now();
+                                const progress = Math.min((now - start) / duration, 1);
+                                const current = Math.floor(target * progress);
+                                
+                                entry.target.textContent = current.toLocaleString();
+                                
+                                if (progress < 1) {
+                                    requestAnimationFrame(updateNumber);
+                                }
+                            }
+                            
+                            updateNumber();
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                });
+                
+                stats.forEach(stat => observer.observe(stat));
+            }
+            
+            // 页面加载完成后执行动画
+            document.addEventListener('DOMContentLoaded', function() {
+                animateNumbers();
+                
+                // 平滑滚动到功能区域
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

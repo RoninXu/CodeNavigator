@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" 
+      th:replace="~{layout/base :: html(pageTitle='快速开始 - CodeNavigator', showSidebar=false, activeNav='getting-started')}">
+<head>
+    <th:block th:fragment="styles">
+        <style>
+            .getting-started-hero {
+                background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+                color: white;
+                padding: 3rem 0;
+                text-align: center;
+            }
+
+            .step-card {
+                border: none;
+                border-radius: 1rem;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+                height: 100%;
+                cursor: pointer;
+            }
+
+            .step-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+            }
+
+            .step-card.completed {
+                border: 2px solid var(--success-color);
+                background: rgba(40, 167, 69, 0.05);
+            }
+
+            .step-card.active {
+                border: 2px solid var(--primary-color);
+                background: rgba(0, 123, 255, 0.05);
+            }
+
+            .step-icon {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                margin: 0 auto 1rem;
+                background: var(--light-bg);
+                color: var(--text-muted);
+            }
+
+            .step-card.completed .step-icon {
+                background: var(--success-color);
+                color: white;
+            }
+
+            .step-card.active .step-icon {
+                background: var(--primary-color);
+                color: white;
+            }
+
+            .quick-action-btn {
+                background: white;
+                border: 2px solid var(--primary-color);
+                color: var(--primary-color);
+                padding: 0.75rem 2rem;
+                border-radius: 2rem;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.3s ease;
+                font-weight: 600;
+            }
+
+            .quick-action-btn:hover {
+                background: var(--primary-color);
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+            }
+
+            .feature-highlight {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 1rem;
+                padding: 2rem;
+                margin: 2rem 0;
+            }
+
+            .progress-tracker {
+                background: white;
+                border-radius: 1rem;
+                padding: 1.5rem;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                position: sticky;
+                top: 2rem;
+            }
+
+            .video-thumbnail {
+                position: relative;
+                border-radius: 1rem;
+                overflow: hidden;
+                cursor: pointer;
+                transition: transform 0.3s ease;
+            }
+
+            .video-thumbnail:hover {
+                transform: scale(1.02);
+            }
+
+            .video-thumbnail .play-button {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 4rem;
+                height: 4rem;
+                background: rgba(0, 0, 0, 0.7);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1.5rem;
+            }
+
+            @media (max-width: 768px) {
+                .getting-started-hero {
+                    padding: 2rem 0;
+                }
+
+                .step-card {
+                    margin-bottom: 1.5rem;
+                }
+
+                .progress-tracker {
+                    position: static;
+                    margin-top: 2rem;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <th:block th:fragment="content">
+        <!-- 英雄区域 -->
+        <section class="getting-started-hero">
+            <div class="container">
+                <h1 class="display-5 fw-bold mb-3">欢迎来到 CodeNavigator！</h1>
+                <p class="lead mb-4">让我们引导您快速开始AI驱动的编程学习之旅</p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="#steps" class="quick-action-btn">
+                        <i class="bi bi-arrow-down"></i>开始引导
+                    </a>
+                    <a href="/conversation?topic=getting-started" class="quick-action-btn">
+                        <i class="bi bi-chat-dots"></i>AI助手引导
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 面包屑导航 -->
+        <div th:replace="~{fragments/breadcrumb :: breadcrumb(${breadcrumbs})}"></div>
+
+        <!-- 主要内容 -->
+        <section class="py-5" id="steps">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <h2 class="h3 mb-4">三步开始您的学习之旅</h2>
+                        
+                        <!-- 步骤1：选择学习方向 -->
+                        <div class="card step-card mb-4" data-step="1">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 text-center">
+                                        <div class="step-icon">
+                                            <i class="bi bi-compass"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <h5 class="card-title">选择学习方向</h5>
+                                        <p class="card-text text-muted">从多种技术栈中选择您感兴趣的学习方向，如Spring、React、或数据结构算法等。</p>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        <a href="/learning-paths" class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-right me-1"></i>选择方向
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 步骤2：AI对话学习 -->
+                        <div class="card step-card mb-4" data-step="2">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 text-center">
+                                        <div class="step-icon">
+                                            <i class="bi bi-robot"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <h5 class="card-title">与AI助手对话</h5>
+                                        <p class="card-text text-muted">通过自然语言与AI助手交流，获得个性化的学习建议和代码指导。</p>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        <a href="/conversation" class="btn btn-outline-primary">
+                                            <i class="bi bi-chat-dots me-1"></i>开始对话
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 步骤3：代码分析与反馈 -->
+                        <div class="card step-card mb-4" data-step="3">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 text-center">
+                                        <div class="step-icon">
+                                            <i class="bi bi-code-slash"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <h5 class="card-title">提交代码获得反馈</h5>
+                                        <p class="card-text text-muted">上传您的代码，获得AI驱动的详细分析和改进建议。</p>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        <a href="/code-analysis" class="btn btn-outline-primary">
+                                            <i class="bi bi-upload me-1"></i>分析代码
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 功能亮点 -->
+                        <div class="feature-highlight">
+                            <h4 class="h5 mb-3">🌟 平台特色功能</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            个性化学习路径
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            实时代码分析
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            智能问答系统
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            学习进度跟踪
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            最佳实践指导
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            24/7在线支持
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 演示视频 -->
+                        <div class="text-center mt-5">
+                            <h4 class="h5 mb-3">观看平台演示</h4>
+                            <div class="video-thumbnail" onclick="playDemo()">
+                                <img src="https://via.placeholder.com/600x300/667eea/ffffff?text=CodeNavigator+演示视频" 
+                                     alt="演示视频" class="img-fluid">
+                                <div class="play-button">
+                                    <i class="bi bi-play-fill"></i>
+                                </div>
+                            </div>
+                            <p class="text-muted mt-2 small">点击观看2分钟平台功能演示</p>
+                        </div>
+                    </div>
+
+                    <!-- 侧边栏 - 进度跟踪 -->
+                    <div class="col-lg-4">
+                        <div class="progress-tracker">
+                            <h5 class="h6 mb-3">您的入门进度</h5>
+                            <div class="progress mb-3" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%" 
+                                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="progress-steps">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="step-indicator me-2">
+                                        <i class="bi bi-circle text-muted"></i>
+                                    </div>
+                                    <span class="small text-muted">选择学习方向</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="step-indicator me-2">
+                                        <i class="bi bi-circle text-muted"></i>
+                                    </div>
+                                    <span class="small text-muted">首次AI对话</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="step-indicator me-2">
+                                        <i class="bi bi-circle text-muted"></i>
+                                    </div>
+                                    <span class="small text-muted">代码分析体验</span>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-3">
+                            
+                            <h6 class="h6 mb-2">需要帮助？</h6>
+                            <p class="small text-muted mb-3">我们的AI助手随时为您服务</p>
+                            <a href="/conversation?topic=help" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="bi bi-question-circle me-1"></i>获取帮助
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 加载遮罩 -->
+        <div th:replace="~{fragments/breadcrumb :: loading-spinner('正在准备您的学习环境...')}"></div>
+        
+        <!-- 消息提示 -->
+        <div th:replace="~{fragments/breadcrumb :: message-toast}"></div>
+    </th:block>
+
+    <th:block th:fragment="scripts">
+        <script>
+            let currentStep = 0;
+            let completedSteps = JSON.parse(localStorage.getItem('onboardingProgress') || '[]');
+
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeProgress();
+                bindStepEvents();
+                checkUrlParams();
+            });
+
+            function initializeProgress() {
+                // 更新已完成步骤的显示
+                completedSteps.forEach(step => {
+                    markStepCompleted(step);
+                });
+                
+                updateProgressBar();
+            }
+
+            function bindStepEvents() {
+                document.querySelectorAll('.step-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const step = parseInt(this.dataset.step);
+                        handleStepClick(step);
+                    });
+                });
+            }
+
+            function handleStepClick(step) {
+                UIHelpers.showLoading('准备跳转...');
+                
+                setTimeout(() => {
+                    switch(step) {
+                        case 1:
+                            window.location.href = '/learning-paths?from=onboarding';
+                            break;
+                        case 2:
+                            window.location.href = '/conversation?topic=getting-started&from=onboarding';
+                            break;
+                        case 3:
+                            window.location.href = '/code-analysis?from=onboarding';
+                            break;
+                    }
+                }, 500);
+            }
+
+            function markStepCompleted(step) {
+                const stepCard = document.querySelector(`[data-step="${step}"]`);
+                if (stepCard) {
+                    stepCard.classList.add('completed');
+                    const icon = stepCard.querySelector('.step-icon i');
+                    if (icon) {
+                        icon.className = 'bi bi-check-lg';
+                    }
+                }
+
+                // 更新侧边栏进度
+                const indicators = document.querySelectorAll('.step-indicator i');
+                if (indicators[step - 1]) {
+                    indicators[step - 1].className = 'bi bi-check-circle-fill text-success';
+                }
+
+                if (!completedSteps.includes(step)) {
+                    completedSteps.push(step);
+                    localStorage.setItem('onboardingProgress', JSON.stringify(completedSteps));
+                }
+            }
+
+            function updateProgressBar() {
+                const progress = (completedSteps.length / 3) * 100;
+                const progressBar = document.querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = progress + '%';
+                    progressBar.setAttribute('aria-valuenow', progress);
+                }
+
+                if (completedSteps.length === 3) {
+                    setTimeout(() => {
+                        UIHelpers.showToast('恭喜！您已完成所有入门步骤！', 'success');
+                    }, 1000);
+                }
+            }
+
+            function checkUrlParams() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const completed = urlParams.get('completed');
+                
+                if (completed) {
+                    const step = parseInt(completed);
+                    if (step >= 1 && step <= 3) {
+                        markStepCompleted(step);
+                        updateProgressBar();
+                        
+                        UIHelpers.showToast(`步骤 ${step} 已完成！`, 'success');
+                        
+                        // 清理URL参数
+                        const newUrl = window.location.pathname;
+                        window.history.replaceState({}, document.title, newUrl);
+                    }
+                }
+            }
+
+            function playDemo() {
+                UIHelpers.showToast('演示视频功能即将上线，敬请期待！', 'info');
+            }
+
+            // 快捷键支持
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case '1':
+                            e.preventDefault();
+                            handleStepClick(1);
+                            break;
+                        case '2':
+                            e.preventDefault();
+                            handleStepClick(2);
+                            break;
+                        case '3':
+                            e.preventDefault();
+                            handleStepClick(3);
+                            break;
+                    }
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>
