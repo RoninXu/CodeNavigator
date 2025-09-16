@@ -10,6 +10,7 @@ import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import org.springframework.core.task.AsyncTaskExecutor;
 import java.util.concurrent.Executor;
 
 @Configuration
@@ -42,7 +43,7 @@ public class PerformanceConfig implements WebMvcConfigurer {
      * 异步任务执行器
      */
     @Bean("asyncTaskExecutor")
-    public Executor asyncTaskExecutor() {
+    public AsyncTaskExecutor asyncTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         
         // 核心线程数
