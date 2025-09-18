@@ -1,8 +1,8 @@
 package com.codenavigator.ai.service;
 
 import com.codenavigator.ai.model.ConversationState;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ConversationStateManager {
-    
-    private final RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired(required = false)
+    private RedisTemplate<String, Object> redisTemplate;
     
     // 作为Redis的备选方案，本地缓存
     private final ConcurrentHashMap<String, ConversationState> localCache = new ConcurrentHashMap<>();
@@ -26,9 +26,12 @@ public class ConversationStateManager {
         log.debug("Getting conversation state for session: {}", sessionId);
         
         try {
-            // 首先尝试从Redis获取
-            String key = STATE_KEY_PREFIX + sessionId;
-            ConversationState state = (ConversationState) redisTemplate.opsForValue().get(key);
+            // 首先尝试从Redis获取（如果可用）
+            ConversationState state = null;
+            if (redisTemplate != null) {
+                String key = STATE_KEY_PREFIX + sessionId;
+                state = (ConversationState) redisTemplate.opsForValue().get(key);
+            }
             
             if (state != null) {
                 log.debug("Found state in Redis for session: {}", sessionId);
@@ -59,20 +62,18 @@ public class ConversationStateManager {
     
     public void saveState(ConversationState state) {
         log.debug("Saving conversation state for session: {}", state.getSessionId());
-        
+
         try {
-            // 保存到Redis
-            String key = STATE_KEY_PREFIX + state.getSessionId();
-            redisTemplate.opsForValue().set(key, state, STATE_EXPIRATION);
-            log.debug("State saved to Redis for session: {}", state.getSessionId());
-            
-            // 同时保存到本地缓存作为备选
+            // 临时禁用Redis，直接使用本地缓存
+            log.debug("Using local cache only for session: {}", state.getSessionId());
+
+            // 保存到本地缓存
             localCache.put(state.getSessionId(), state);
-            
+
         } catch (Exception e) {
-            log.warn("Error saving state to Redis, using local cache only for session: {}", 
+            log.warn("Error saving state to local cache for session: {}",
                      state.getSessionId(), e);
-            localCache.put(state.getSessionId(), state);
+            throw new RuntimeException("Failed to save conversation state", e);
         }
     }
     
@@ -80,11 +81,13 @@ public class ConversationStateManager {
         log.debug("Deleting conversation state for session: {}", sessionId);
         
         try {
-            // 从Redis删除
-            String key = STATE_KEY_PREFIX + sessionId;
-            redisTemplate.delete(key);
-            log.debug("State deleted from Redis for session: {}", sessionId);
-            
+            // 从Redis删除（如果可用）
+            if (redisTemplate != null) {
+                String key = STATE_KEY_PREFIX + sessionId;
+                redisTemplate.delete(key);
+                log.debug("State deleted from Redis for session: {}", sessionId);
+            }
+
         } catch (Exception e) {
             log.warn("Error deleting state from Redis for session: {}", sessionId, e);
         }

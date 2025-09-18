@@ -196,8 +196,9 @@ public class ProgressTracker {
     
     private void updateModuleCompletion(UserProgress progress, String moduleId) {
         Map<String, Object> moduleProgressMap = deserializeModuleProgress(progress.getModuleProgress());
-        
+
         if (moduleProgressMap.containsKey(moduleId)) {
+            @SuppressWarnings("unchecked")
             Map<String, Object> moduleStatus = (Map<String, Object>) moduleProgressMap.get(moduleId);
             moduleStatus.put("status", "COMPLETED");
             moduleStatus.put("completedAt", LocalDateTime.now());
@@ -274,6 +275,7 @@ public class ProgressTracker {
     
     private ProgressStatus getModuleStatus(UserProgress userProgress, String moduleId) {
         Map<String, Object> moduleProgressMap = deserializeModuleProgress(userProgress.getModuleProgress());
+        @SuppressWarnings("unchecked")
         Map<String, Object> moduleStatus = (Map<String, Object>) moduleProgressMap.get(moduleId);
         
         if (moduleStatus != null) {
@@ -286,6 +288,7 @@ public class ProgressTracker {
     
     private LocalDateTime getModuleCompletedAt(UserProgress userProgress, String moduleId) {
         Map<String, Object> moduleProgressMap = deserializeModuleProgress(userProgress.getModuleProgress());
+        @SuppressWarnings("unchecked")
         Map<String, Object> moduleStatus = (Map<String, Object>) moduleProgressMap.get(moduleId);
         
         if (moduleStatus != null) {
@@ -297,6 +300,7 @@ public class ProgressTracker {
     
     private long getModuleTimeSpent(UserProgress userProgress, String moduleId) {
         Map<String, Object> moduleProgressMap = deserializeModuleProgress(userProgress.getModuleProgress());
+        @SuppressWarnings("unchecked")
         Map<String, Object> moduleStatus = (Map<String, Object>) moduleProgressMap.get(moduleId);
         
         if (moduleStatus != null) {

@@ -14,7 +14,20 @@
       "Bash(docker exec:*)",
       "Bash(docker cp:*)",
       "Bash(find:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(dir)",
+      "Bash(dir:*)",
+      "Bash(timeout:*)",
+      "Bash(docker port:*)",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)",
+      "Bash(docker run:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c:*)",
+      "Bash(tasklist)",
+      "Bash(wmic process where processid=25772 get commandline:*)"
     ],
     "deny": [],
     "ask": []

@@ -29,18 +29,6 @@ public class HomeController {
         return "learning/index";
     }
     
-    @GetMapping("/conversation")
-    public String conversation(Model model, @RequestParam(value = "from", required = false) String from) {
-        model.addAttribute("title", "AI对话");
-        model.addAttribute("breadcrumbs", new String[]{"首页", "AI对话"});
-        
-        // 添加来源页面信息，用于更好的用户体验
-        if (from != null) {
-            model.addAttribute("referrer", from);
-        }
-        
-        return "conversation/chat";
-    }
     
     @GetMapping("/code-analysis")
     public String codeAnalysis(Model model) {

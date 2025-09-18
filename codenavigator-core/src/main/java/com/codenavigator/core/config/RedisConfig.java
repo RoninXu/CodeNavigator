@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,14 +33,15 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
 
         // JSON序列化配置
-        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = 
-            new Jackson2JsonRedisSerializer<>(Object.class);
-        
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, 
+        objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance,
                                           ObjectMapper.DefaultTyping.NON_FINAL);
-        jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
+        // 注册JSR310时间模块，支持LocalDateTime等Java 8时间类型
+        objectMapper.registerModule(new JavaTimeModule());
+
+        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer =
+            new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
 
         // String序列化
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();

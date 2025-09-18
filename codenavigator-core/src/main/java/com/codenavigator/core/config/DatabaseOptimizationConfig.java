@@ -6,7 +6,6 @@ import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
@@ -14,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "com.codenavigator.core.repository")
 @EnableTransactionManagement
 public class DatabaseOptimizationConfig {
 
@@ -28,15 +26,9 @@ public class DatabaseOptimizationConfig {
             // 查询优化配置
             // ================================
             
-            // 启用二级缓存
-            properties.put("hibernate.cache.use_second_level_cache", "true");
-            properties.put("hibernate.cache.use_query_cache", "true");
-            properties.put("hibernate.cache.region.factory_class", 
-                          "org.hibernate.cache.jcache.JCacheRegionFactory");
-            
-            // 配置缓存提供者（使用EHCache）
-            properties.put("hibernate.javax.cache.provider", 
-                          "org.ehcache.jsr107.EhcacheCachingProvider");
+            // 禁用二级缓存（避免JCache依赖问题）
+            properties.put("hibernate.cache.use_second_level_cache", "false");
+            properties.put("hibernate.cache.use_query_cache", "false");
             
             // ================================
             // 批处理优化
@@ -81,8 +73,9 @@ public class DatabaseOptimizationConfig {
             // 启用SQL注释
             properties.put("hibernate.use_sql_comments", "true");
             
-            // 禁用自动schema验证（生产环境）
-            properties.put("hibernate.hbm2ddl.auto", "validate");
+            // schema管理策略（根据环境配置决定）
+            // 在开发环境中通过application-dev.yml配置为create-drop
+            // properties.put("hibernate.hbm2ddl.auto", "validate");
             
             // ================================
             // 其他性能优化

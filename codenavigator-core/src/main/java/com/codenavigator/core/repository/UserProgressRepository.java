@@ -38,7 +38,7 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Long
     @Query("SELECT up FROM UserProgress up " +
            "LEFT JOIN FETCH up.learningPath " +
            "LEFT JOIN FETCH up.currentModule " +
-           "WHERE up.userId = :userId")
+           "WHERE up.user.id = :userId")
     List<UserProgress> findByUserIdWithDetails(@Param("userId") Long userId);
 
     /**
@@ -87,9 +87,9 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Long
      */
     @Modifying
     @Query("UPDATE UserProgress up SET up.lastActiveAt = :activeTime " +
-           "WHERE up.userId = :userId AND up.learningPath.id = :pathId")
-    int updateLastActiveTime(@Param("userId") Long userId, 
-                           @Param("pathId") String pathId, 
+           "WHERE up.user.id = :userId AND up.learningPath.id = :pathId")
+    int updateLastActiveTime(@Param("userId") Long userId,
+                           @Param("pathId") String pathId,
                            @Param("activeTime") LocalDateTime activeTime);
 
     /**
@@ -143,10 +143,10 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Long
      */
     @Query("SELECT up FROM UserProgress up " +
            "LEFT JOIN FETCH up.learningPath " +
-           "WHERE up.userId = :userId " +
+           "WHERE up.user.id = :userId " +
            "AND up.lastActiveAt >= :fromDate " +
            "ORDER BY up.lastActiveAt DESC")
-    List<UserProgress> findRecentActivity(@Param("userId") Long userId, 
+    List<UserProgress> findRecentActivity(@Param("userId") Long userId,
                                          @Param("fromDate") LocalDateTime fromDate);
 
     /**
@@ -221,6 +221,6 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Long
      * 删除用户的特定学习进度
      */
     @Modifying
-    @Query("DELETE FROM UserProgress up WHERE up.userId = :userId AND up.learningPath.id = :pathId")
+    @Query("DELETE FROM UserProgress up WHERE up.user.id = :userId AND up.learningPath.id = :pathId")
     int deleteByUserIdAndLearningPathId(@Param("userId") Long userId, @Param("pathId") String pathId);
 }
