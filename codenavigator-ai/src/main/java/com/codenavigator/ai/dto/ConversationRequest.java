@@ -17,6 +17,7 @@ public class ConversationRequest {
     private String message;
     private String sessionId;
     private ConversationType type;
+    private String preferredProvider; // AI模型提供商偏好
     private Map<String, Object> context;
     
     public enum ConversationType {

@@ -82,7 +82,26 @@ springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
 
-# LangChain4j配置
+# AI模型配置
+ai:
+  default-provider: openai
+  providers:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-197783824a45411fbbe712466fcf4234}
+      base-url: https://api.openai.com/v1
+      model-name: gpt-4
+      temperature: 0.7
+      max-tokens: 2000
+      timeout: 60s
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: https://api.deepseek.com/v1
+      model-name: deepseek-chat
+      temperature: 0.7
+      max-tokens: 2000
+      timeout: 60s
+
+# LangChain4j配置 (保持兼容性)
 langchain4j:
   open-ai:
     chat-model:

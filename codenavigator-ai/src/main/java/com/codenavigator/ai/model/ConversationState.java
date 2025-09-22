@@ -59,7 +59,16 @@ public class ConversationState {
     }
     
     public boolean isExpired() {
-        return lastInteraction != null && 
+        return lastInteraction != null &&
                lastInteraction.isBefore(LocalDateTime.now().minusHours(2));
+    }
+
+    public List<String> getRecentMessages(int count) {
+        if (messageHistory == null || messageHistory.isEmpty()) {
+            return List.of();
+        }
+
+        int startIndex = Math.max(0, messageHistory.size() - count);
+        return messageHistory.subList(startIndex, messageHistory.size());
     }
 }

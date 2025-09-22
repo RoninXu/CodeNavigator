@@ -2,7 +2,9 @@ package com.codenavigator.ai.engine;
 
 import com.codenavigator.ai.dto.ConversationRequest;
 import com.codenavigator.ai.dto.ConversationResponse;
+import com.codenavigator.ai.enums.AiProvider;
 import com.codenavigator.ai.model.ConversationState;
+import com.codenavigator.ai.service.AiModelService;
 import com.codenavigator.ai.service.NaturalLanguageProcessor;
 import com.codenavigator.ai.service.LearningPathGenerator;
 import com.codenavigator.ai.service.ConversationStateManager;
@@ -19,6 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ConversationEngine {
     
+    private final AiModelService aiModelService;
     private final NaturalLanguageProcessor nlpProcessor;
     private final LearningPathGenerator pathGenerator;
     private final ConversationStateManager stateManager;
@@ -252,11 +255,61 @@ public class ConversationEngine {
     }
     
     private ConversationResponse generateDefaultResponse(ConversationRequest request, ConversationState state) {
-        return ConversationResponse.builder()
-            .type(ConversationResponse.ResponseType.TEXT_RESPONSE)
-            .message("我理解你的需求，让我为你提供帮助...")
-            .confidence(0.5)
-            .build();
+        try {
+            // 使用AI模型生成智能回复
+            String aiResponse = generateAiResponse(request, state);
+            return ConversationResponse.builder()
+                .type(ConversationResponse.ResponseType.TEXT_RESPONSE)
+                .message(aiResponse)
+                .confidence(0.8)
+                .build();
+        } catch (Exception e) {
+            log.error("Error generating AI response", e);
+            return ConversationResponse.builder()
+                .type(ConversationResponse.ResponseType.TEXT_RESPONSE)
+                .message("我理解你的需求，让我为你提供帮助...")
+                .confidence(0.5)
+                .build();
+        }
+    }
+
+    private String generateAiResponse(ConversationRequest request, ConversationState state) {
+        // 构建上下文提示
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("你是CodeNavigator的AI学习助手，专门帮助用户制定技术学习路径和解答编程问题。\n\n");
+
+        // 添加会话上下文
+        if (state.getLearningGoal() != null) {
+            promptBuilder.append("用户学习目标: ").append(state.getLearningGoal()).append("\n");
+        }
+        if (state.getUserLevel() != null) {
+            promptBuilder.append("用户技能水平: ").append(state.getUserLevel()).append("\n");
+        }
+        promptBuilder.append("会话阶段: ").append(state.getPhase()).append("\n");
+
+        // 添加历史消息（最近几条）
+        List<String> recentMessages = state.getRecentMessages(3);
+        if (!recentMessages.isEmpty()) {
+            promptBuilder.append("\n最近对话:\n");
+            for (int i = 0; i < recentMessages.size(); i++) {
+                promptBuilder.append(i % 2 == 0 ? "用户: " : "助手: ").append(recentMessages.get(i)).append("\n");
+            }
+        }
+
+        promptBuilder.append("\n当前用户消息: ").append(request.getMessage());
+        promptBuilder.append("\n\n请基于以上信息给出专业、有帮助的回复。回复应该简洁明了，并提供具体的学习建议或解答。");
+
+        // 支持指定AI提供商
+        if (request.getPreferredProvider() != null) {
+            try {
+                AiProvider provider = AiProvider.fromCode(request.getPreferredProvider());
+                return aiModelService.sendMessage(promptBuilder.toString(), provider);
+            } catch (Exception e) {
+                log.warn("Failed to use preferred provider {}, falling back to default", request.getPreferredProvider());
+            }
+        }
+
+        return aiModelService.sendMessage(promptBuilder.toString());
     }
     
     private void updateConversationState(ConversationState state, String intent, Map<String, Object> entities) {
