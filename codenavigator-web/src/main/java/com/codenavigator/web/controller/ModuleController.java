@@ -2,6 +2,14 @@ package com.codenavigator.web.controller;
 
 import com.codenavigator.ai.service.ProgressTracker;
 import com.codenavigator.ai.service.TaskDifficultyAssessor;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -15,13 +23,17 @@ import java.util.Map;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/modules")
+@Tag(name = "学习模块管理", description = "学习模块查看、学习、任务提交相关接口")
 public class ModuleController {
     
     private final ProgressTracker progressTracker;
     private final TaskDifficultyAssessor difficultyAssessor;
     
+    @Hidden
     @GetMapping("/{moduleId}")
-    public String viewModule(@PathVariable String moduleId, Model model) {
+    public String viewModule(
+            @Parameter(description = "学习模块唯一标识符", required = true, example = "module-001")
+            @PathVariable String moduleId, Model model) {
         log.info("Viewing module: {}", moduleId);
         
         // 这里应该从数据库获取模块信息
@@ -33,8 +45,11 @@ public class ModuleController {
         return "module/detail";
     }
     
+    @Hidden
     @GetMapping("/{moduleId}/learn")
-    public String learnModule(@PathVariable String moduleId, Model model) {
+    public String learnModule(
+            @Parameter(description = "要学习的模块ID", required = true, example = "module-001")
+            @PathVariable String moduleId, Model model) {
         log.info("Starting to learn module: {}", moduleId);
         
         model.addAttribute("moduleId", moduleId);
@@ -43,11 +58,23 @@ public class ModuleController {
         return "module/learn";
     }
     
+    @Operation(summary = "完成学习模块", description = "标记指定模块为已完成状态")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "模块完成成功",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(example = "{\"success\": true, \"message\": \"模块完成！\", \"nextModule\": \"next-module-id\"}"))),
+        @ApiResponse(responseCode = "404", description = "模块不存在"),
+        @ApiResponse(responseCode = "500", description = "服务器内部错误")
+    })
     @PostMapping("/{moduleId}/complete")
     @ResponseBody
-    public Map<String, Object> completeModule(@PathVariable String moduleId,
-                                            @RequestParam(defaultValue = "default-user") String userId,
-                                            @RequestBody Map<String, Object> submission) {
+    public Map<String, Object> completeModule(
+            @Parameter(description = "要完成的模块ID", required = true, example = "module-001")
+            @PathVariable String moduleId,
+            @Parameter(description = "用户唯一标识符", example = "user-123")
+            @RequestParam(defaultValue = "default-user") String userId,
+            @Parameter(description = "学习成果提交内容", required = true)
+            @RequestBody Map<String, Object> submission) {
         log.info("Completing module {} for user {}", moduleId, userId);
         
         Map<String, Object> response = new HashMap<>();
@@ -68,11 +95,26 @@ public class ModuleController {
         return response;
     }
     
+    @Operation(summary = "提交学习任务", description = "提交指定模块的学习任务，如代码审查、答题、项目实战等")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "任务提交成功",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(example = "{\"success\": true, \"score\": 85, \"feedback\": {}}"))),
+        @ApiResponse(responseCode = "400", description = "任务类型不支持或参数错误"),
+        @ApiResponse(responseCode = "404", description = "模块不存在"),
+        @ApiResponse(responseCode = "500", description = "任务处理失败")
+    })
     @PostMapping("/{moduleId}/submit-task")
     @ResponseBody
-    public Map<String, Object> submitTask(@PathVariable String moduleId,
-                                        @RequestParam String taskType,
-                                        @RequestBody Map<String, Object> taskData) {
+    public Map<String, Object> submitTask(
+            @Parameter(description = "模块唯一标识符", required = true, example = "module-001")
+            @PathVariable String moduleId,
+            @Parameter(description = "任务类型", required = true, example = "code_review",
+                    schema = @Schema(allowableValues = {"code_review", "quiz", "project"}))
+            @RequestParam String taskType,
+            @Parameter(description = "任务数据", required = true,
+                    schema = @Schema(example = "{\"code\": \"public class Hello {}\", \"language\": \"java\"}"))
+            @RequestBody Map<String, Object> taskData) {
         log.info("Submitting task for module: {}, type: {}", moduleId, taskType);
         
         Map<String, Object> response = new HashMap<>();
@@ -101,9 +143,19 @@ public class ModuleController {
         return response;
     }
     
+    @Operation(summary = "获取学习提示", description = "获取指定模块的学习提示和建议")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "成功获取学习提示",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(example = "{\"success\": true, \"hints\": {\"general\": \"仔细阅读文档，理解核心概念\"}}"))),
+        @ApiResponse(responseCode = "404", description = "模块不存在"),
+        @ApiResponse(responseCode = "500", description = "服务器内部错误")
+    })
     @GetMapping("/{moduleId}/hints")
     @ResponseBody
-    public Map<String, Object> getHints(@PathVariable String moduleId) {
+    public Map<String, Object> getHints(
+            @Parameter(description = "模块唯一标识符", required = true, example = "module-001")
+            @PathVariable String moduleId) {
         log.info("Getting hints for module: {}", moduleId);
         
         Map<String, Object> response = new HashMap<>();

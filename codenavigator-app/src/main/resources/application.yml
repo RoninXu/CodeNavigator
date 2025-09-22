@@ -66,6 +66,22 @@ management:
     health:
       show-details: when-authorized
 
+# Swagger/OpenAPI 配置
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+    filter: true
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
 # LangChain4j配置
 langchain4j:
   open-ai:
