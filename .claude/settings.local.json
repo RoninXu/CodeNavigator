@@ -27,7 +27,10 @@
       "Bash(taskkill:*)",
       "Bash(cmd /c:*)",
       "Bash(tasklist)",
-      "Bash(wmic process where processid=25772 get commandline:*)"
+      "Bash(wmic process where processid=25772 get commandline:*)",
+      "Bash(wmic process where processid=37272 get commandline:*)",
+      "Bash(git reset:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
