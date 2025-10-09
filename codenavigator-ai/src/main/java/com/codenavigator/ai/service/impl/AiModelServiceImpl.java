@@ -153,6 +153,7 @@ public class AiModelServiceImpl implements AiModelService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         String url = config.getBaseUrl() + "/chat/completions";
+        @SuppressWarnings("rawtypes")
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
 
         return extractResponseContent(response.getBody());
@@ -178,6 +179,7 @@ public class AiModelServiceImpl implements AiModelService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         String url = config.getBaseUrl() + "/chat/completions";
+        @SuppressWarnings("rawtypes")
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
 
         return extractResponseContent(response.getBody());

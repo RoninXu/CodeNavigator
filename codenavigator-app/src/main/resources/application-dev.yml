@@ -6,6 +6,15 @@ spring:
     username: sa
     password:
 
+  # DevTools配置 - 解决端口不释放问题
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 1000ms
+      quiet-period: 400ms
+    livereload:
+      enabled: false  # 禁用LiveReload可以减少端口占用问题
+
   mvc:
     favicon:
       enabled: false

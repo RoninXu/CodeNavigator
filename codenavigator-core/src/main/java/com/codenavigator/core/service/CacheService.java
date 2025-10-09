@@ -311,7 +311,10 @@ public class CacheService {
      */
     public void flushAll() {
         try {
-            redisTemplate.getConnectionFactory().getConnection().flushAll();
+            redisTemplate.execute((org.springframework.data.redis.core.RedisCallback<Object>) connection -> {
+                connection.serverCommands().flushAll();
+                return null;
+            });
             log.warn("All cache flushed");
         } catch (Exception e) {
             log.error("Failed to flush all cache", e);

@@ -46,7 +46,11 @@ spring:
     mode: HTML
     prefix: classpath:/templates/
     suffix: .html
-    
+
+  # 应用程序生命周期配置 - 优雅关闭
+  lifecycle:
+    timeout-per-shutdown-phase: 30s  # 关闭超时时间
+
 server:
   port: 8080
   servlet:
@@ -55,6 +59,7 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+  shutdown: graceful  # 优雅关闭，确保端口正确释放
 
 # Management endpoints
 management:
