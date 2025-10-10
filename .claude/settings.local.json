@@ -30,7 +30,8 @@
       "Bash(wmic process where processid=25772 get commandline:*)",
       "Bash(wmic process where processid=37272 get commandline:*)",
       "Bash(git reset:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(docker inspect:*)"
     ],
     "deny": [],
     "ask": []
