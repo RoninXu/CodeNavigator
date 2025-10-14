@@ -182,12 +182,12 @@ public class ProgressTracker {
         
         Map<String, Object> moduleProgressMap = new HashMap<>();
         for (LearningModule module : modules) {
-            moduleProgressMap.put(module.getId(), Map.of(
-                "status", "NOT_STARTED",
-                "startedAt", (Object) null,
-                "completedAt", (Object) null,
-                "timeSpent", 0
-            ));
+            Map<String, Object> moduleStatus = new HashMap<>();
+            moduleStatus.put("status", "NOT_STARTED");
+            moduleStatus.put("startedAt", null);
+            moduleStatus.put("completedAt", null);
+            moduleStatus.put("timeSpent", 0);
+            moduleProgressMap.put(module.getId(), moduleStatus);
         }
         
         // 将进度信息序列化为JSON字符串存储

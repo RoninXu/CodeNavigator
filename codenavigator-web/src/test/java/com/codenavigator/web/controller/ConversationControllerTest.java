@@ -47,7 +47,7 @@ class ConversationControllerTest {
 
         // 准备测试响应
         successResponse = ConversationResponse.builder()
-                .type(ConversationResponse.ResponseType.ANSWER)
+                .type(ConversationResponse.ResponseType.TEXT_RESPONSE)
                 .message("Spring Boot is a framework for building Java applications.")
                 .confidence(0.95)
                 .build();
@@ -74,7 +74,7 @@ class ConversationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.type").value("ANSWER"))
+                .andExpect(jsonPath("$.type").value("TEXT_RESPONSE"))
                 .andExpect(jsonPath("$.message").value(containsString("Spring Boot")))
                 .andExpect(jsonPath("$.confidence").value(0.95));
 
@@ -94,7 +94,7 @@ class ConversationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.type").value("ANSWER"));
+                .andExpect(jsonPath("$.type").value("TEXT_RESPONSE"));
 
         // Verify that processMessage was called with default userId
         verify(conversationEngine, times(1)).processMessage(any(ConversationRequest.class));
@@ -112,7 +112,7 @@ class ConversationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.type").value("ANSWER"));
+                .andExpect(jsonPath("$.type").value("TEXT_RESPONSE"));
 
         // Verify
         verify(conversationEngine, times(1)).processMessage(any(ConversationRequest.class));
@@ -144,7 +144,7 @@ class ConversationControllerTest {
         validRequest.setMessage("public class Test { }");
 
         ConversationResponse codeReviewResponse = ConversationResponse.builder()
-                .type(ConversationResponse.ResponseType.CODE_REVIEW)
+                .type(ConversationResponse.ResponseType.CODE_ANALYSIS)
                 .message("Your code looks good!")
                 .confidence(0.90)
                 .build();
@@ -157,7 +157,7 @@ class ConversationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.type").value("CODE_REVIEW"))
+                .andExpect(jsonPath("$.type").value("CODE_ANALYSIS"))
                 .andExpect(jsonPath("$.confidence").value(0.90));
 
         verify(conversationEngine, times(1)).processMessage(any(ConversationRequest.class));
@@ -166,11 +166,11 @@ class ConversationControllerTest {
     @Test
     void testSendMessage_ConceptExplanation() throws Exception {
         // Given
-        validRequest.setType(ConversationRequest.ConversationType.CONCEPT_EXPLANATION);
+        validRequest.setType(ConversationRequest.ConversationType.GENERAL_QUESTION);
         validRequest.setMessage("Explain dependency injection");
 
         ConversationResponse explanationResponse = ConversationResponse.builder()
-                .type(ConversationResponse.ResponseType.EXPLANATION)
+                .type(ConversationResponse.ResponseType.TEXT_RESPONSE)
                 .message("Dependency Injection is a design pattern...")
                 .confidence(0.92)
                 .build();
@@ -183,7 +183,7 @@ class ConversationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.type").value("EXPLANATION"))
+                .andExpect(jsonPath("$.type").value("TEXT_RESPONSE"))
                 .andExpect(jsonPath("$.message").value(containsString("Dependency Injection")))
                 .andExpect(jsonPath("$.confidence").value(0.92));
 
@@ -255,7 +255,7 @@ class ConversationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.type").value("ANSWER"));
+                .andExpect(jsonPath("$.type").value("TEXT_RESPONSE"));
 
         verify(conversationEngine, times(1)).processMessage(any(ConversationRequest.class));
     }
@@ -274,7 +274,7 @@ class ConversationControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.type").value("ANSWER"));
+                    .andExpect(jsonPath("$.type").value("TEXT_RESPONSE"));
         }
 
         // Verify engine was called 3 times
