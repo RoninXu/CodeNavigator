@@ -55,14 +55,14 @@ class ConversationEngineTest {
     @BeforeEach
     void setUp() {
         testRequest = ConversationRequest.builder()
-            .userId(1L)
+            .userId("1")
             .message("我想学习Spring")
-            .type("learning")
+            .type(ConversationRequest.ConversationType.LEARNING_GOAL_SETTING)
             .build();
 
         testState = ConversationState.builder()
             .sessionId("test-session-id")
-            .userId(1L)
+            .userId("1")
             .phase(ConversationState.ConversationPhase.GREETING)
             .messageCount(0)
             .build();
@@ -215,7 +215,7 @@ class ConversationEngineTest {
         testState.setUserLevel(UserLevel.BEGINNER);
 
         LearningPath mockPath = new LearningPath();
-        mockPath.setId(1L);
+        mockPath.setId("1");
         mockPath.setEstimatedDuration(8);
         mockPath.setModules(List.of());
 
@@ -464,7 +464,7 @@ class ConversationEngineTest {
         testState.setUserLevel(UserLevel.BEGINNER);
 
         LearningPath mockPath = new LearningPath();
-        mockPath.setId(1L);
+        mockPath.setId("1");
         mockPath.setEstimatedDuration(8);
         mockPath.setModules(List.of());
 
@@ -530,14 +530,14 @@ class ConversationEngineTest {
     void testCompleteConversationFlow_GreetingToPathGeneration() {
         // Given - 新会话
         ConversationRequest req1 = ConversationRequest.builder()
-            .userId(1L)
+            .userId("1")
             .message("你好")
-            .type("learning")
+            .type(ConversationRequest.ConversationType.LEARNING_GOAL_SETTING)
             .build();
 
         ConversationState state = ConversationState.builder()
             .sessionId("flow-test-session")
-            .userId(1L)
+            .userId("1")
             .phase(ConversationState.ConversationPhase.GREETING)
             .messageCount(0)
             .build();
@@ -557,7 +557,7 @@ class ConversationEngineTest {
         state.setPhase(ConversationState.ConversationPhase.GOAL_IDENTIFICATION);
         when(nlpProcessor.extractLearningGoal(anyString())).thenReturn("Kafka");
         ConversationRequest req2 = ConversationRequest.builder()
-            .userId(1L)
+            .userId("1")
             .sessionId(response1.getSessionId())
             .message("我想学习Kafka")
             .build();

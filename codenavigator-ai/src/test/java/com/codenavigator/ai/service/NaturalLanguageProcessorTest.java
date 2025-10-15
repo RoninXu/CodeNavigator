@@ -25,7 +25,7 @@ class NaturalLanguageProcessorTest {
         nlpProcessor = new NaturalLanguageProcessor();
         testState = ConversationState.builder()
             .sessionId("test-session")
-            .userId(1L)
+            .userId("1")
             .phase(ConversationState.ConversationPhase.GREETING)
             .messageCount(0)
             .build();
