@@ -31,7 +31,9 @@
       "Bash(wmic process where processid=37272 get commandline:*)",
       "Bash(git reset:*)",
       "Bash(git rm:*)",
-      "Bash(docker inspect:*)"
+      "Bash(docker inspect:*)",
+      "Bash(del:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []
